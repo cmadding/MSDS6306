@@ -2,6 +2,7 @@
 title: "Live Session 4 Assignment"
 author: "Chad Madding"
 date: "September 17, 2018"
+<<<<<<< HEAD
 output:
   html_document:
     keep_md: true
