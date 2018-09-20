@@ -15,26 +15,6 @@ ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMEN
 TIPS: If you are having problems with scraping, go to the website to check if it is online. If it is, then take a look at the actual website to verify how it is structured. Feel free to use View Source to narrow down good nodes to use. You are welcome to use any R libraries for this assignment. Off the top of my head, good ones to use might be rvest, dplyr, tidyr, ggplot2, reshape2, or stringr. You don’t need to include install.packages for your final code, but you need library() for each.
 
 
-```r
-library("rvest")
-```
-
-```
-## Warning: package 'rvest' was built under R version 3.4.4
-```
-
-```
-## Loading required package: xml2
-```
-
-```
-## Warning: package 'xml2' was built under R version 3.4.4
-```
-
-```r
-library("dplyr")
-```
-
 ```
 ## Warning: package 'dplyr' was built under R version 3.4.4
 ```
@@ -56,24 +36,43 @@ library("dplyr")
 ##     intersect, setdiff, setequal, union
 ```
 
-```r
-library("tidyr")
+```
+## Warning: package 'ggplot2' was built under R version 3.4.4
+```
+
+```
+## Warning: package 'rvest' was built under R version 3.4.4
+```
+
+```
+## Loading required package: xml2
+```
+
+```
+## Warning: package 'xml2' was built under R version 3.4.4
+```
+
+```
+## Warning: package 'stringr' was built under R version 3.4.4
 ```
 
 ```
 ## Warning: package 'tidyr' was built under R version 3.4.4
 ```
 
-```r
-library("ggplot2")
+```
+## Warning: package 'data.table' was built under R version 3.4.4
 ```
 
 ```
-## Warning: package 'ggplot2' was built under R version 3.4.4
+## 
+## Attaching package: 'data.table'
 ```
 
-```r
-library("reshape2")
+```
+## The following objects are masked from 'package:dplyr':
+## 
+##     between, first, last
 ```
 
 ```
@@ -86,17 +85,15 @@ library("reshape2")
 ```
 
 ```
+## The following objects are masked from 'package:data.table':
+## 
+##     dcast, melt
+```
+
+```
 ## The following object is masked from 'package:tidyr':
 ## 
 ##     smiths
-```
-
-```r
-library("stringr")
-```
-
-```
-## Warning: package 'stringr' was built under R version 3.4.4
 ```
 
 ## Questions
@@ -104,29 +101,91 @@ library("stringr")
    a. In the IMDB, there are listings of full cast members for movies. Navigate to http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1. Feel free to View Source to get a good idea of what the page looks like in code.
 
 ```r
-url = "http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1"
+#Read the information from IMDB
+HPCast <- read_html("http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1")
 ```
    
    b. Scrape the page with any R package that makes things easy for you. Of particular interest is the table of the Cast in order of crediting. Please scrape this table (you might have to fish it out of several of the tables from the page) and make it a data.frame() of the Cast in your R environment
 
 ```r
-page = read_html(url)
-
-movie.nodes <- html_nodes(page,'.titleColumn a')
-
-movie.link = sapply(html_attrs(movie.nodes),`[[`,'href')
-movie.link = paste0("http://www.imdb.com",movie.link)
-movie.cast = sapply(html_attrs(movie.nodes),`[[`,'title')
-movie.name = html_text(movie.nodes)
+# Use SelectorGadget to find the correct keywords: .cast_list td:nth-child(2) and .character
+# Scrap the actor data
+actor_data_html <- html_nodes(HPCast,'.cast_list td:nth-child(2)')
+# Convert actor data to text
+actor_data <- html_text(actor_data_html)
+# Scrap character data
+character_data_html <- html_nodes(HPCast,'.character')
+#Convert character data to text
+character_data <- html_text(character_data_html)
 ```
    
    c. Clean up the table:
       1. It should not have blank observations or rows, a row that should be column names, or just ‘…’
+
+```r
+# Remove the \n in character_data
+character_data <- gsub("\n","",character_data)
+# Remove extra space
+character_data <- str_squish(character_data)
+# create two data frames
+actor_data = data.frame(actor_data)
+character_data = data.frame(character_data)
+# change actor and character class to character
+actor_data[] <- lapply(actor_data, as.character)
+character_data[] <- lapply(character_data, as.character)
+```
       2. It should have intuitive column names (ideally 2 to start – Actor and Character)
+
+```r
+# add names
+names(actor_data) = c("ActorName")
+names(character_data) = c("Character")
+```
       3. In the film, Mr. Warwick plays two characters, which makes his row look a little weird. Please replace his character column with just “Griphook / Professor Filius Flitwick” to make it look better.
       4. One row might result in “Rest of cast listed alphabetically” – remove this observation.
+
+```r
+# create two data frames
+actor_data = data.frame(actor_data)
+character_data = data.frame(character_data)
+# change actor and character class to character
+actor_data[] <- lapply(actor_data, as.character)
+character_data[] <- lapply(character_data, as.character)
+# add names
+names(actor_data) = c("ActorName")
+names(character_data) = c("Character")
+```
+      
    d. Split the Actor’s name into two columns: FirstName and Surname. Keep in mind that some actors/actresses have middle names as well. Please make sure that the middle names are in the FirstName column, in addition to the first name (example: given the Actor Frank Jeffrey Stevenson, the FirstName column would say “Frank Jeffrey.”)
+
+```r
+#Split Actor’s name into two columns: FirstName and Surname
+actor_names <- extract(actor_data, ActorName, c("FirstName", "Surname"), "(.+) (.+)")
+```
+   
    e. Present the first 10 rows of the data.frame() – It should have only FirstName, Surname, and Character columns.
+
+```r
+# Combine the two data frames
+HarryPotterCast <- cbind(actor_names,character_data)
+#Present the first 10 rows of the data frame
+head(HarryPotterCast, 10)
+```
+
+```
+##    FirstName   Surname                            Character
+## 1      Ralph   Fiennes                       Lord Voldemort
+## 2    Michael    Gambon           Professor Albus Dumbledore
+## 3       Alan   Rickman              Professor Severus Snape
+## 4     Daniel Radcliffe                         Harry Potter
+## 5     Rupert     Grint                          Ron Weasley
+## 6       Emma    Watson                     Hermione Granger
+## 7     Evanna     Lynch                        Luna Lovegood
+## 8   Domhnall   Gleeson                         Bill Weasley
+## 9   Clémence     Poésy                       Fleur Delacour
+## 10   Warwick     Davis Griphook / Professor Filius Flitwick
+```
+   
 ###2. SportsBall (50%)
    a. On the ESPN website, there are statistics of each NBA player. Navigate to the San Antonio Spurs current statistics (likely http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs). You are interested in the Shooting Statistics table.
    b. Scrape the page with any R package that makes things easy for you. There are a few tables on the page, so make sure you are targeting specifically the Shooting Statistics table.

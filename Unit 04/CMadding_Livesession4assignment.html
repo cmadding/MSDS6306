@@ -133,11 +133,6 @@ $(document).ready(function () {
 <h2>Submission</h2>
 <p>ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMENT. Use RMarkdown to create this file. Formatting can be basic, but it should be easily human-readable. Unless otherwise stated, please enable {r, echo=TRUE} so your code is visible.</p>
 <p>TIPS: If you are having problems with scraping, go to the website to check if it is online. If it is, then take a look at the actual website to verify how it is structured. Feel free to use View Source to narrow down good nodes to use. You are welcome to use any R libraries for this assignment. Off the top of my head, good ones to use might be rvest, dplyr, tidyr, ggplot2, reshape2, or stringr. You don’t need to include install.packages for your final code, but you need library() for each.</p>
-<pre class="r"><code>library(&quot;rvest&quot;)</code></pre>
-<pre><code>## Warning: package 'rvest' was built under R version 3.4.4</code></pre>
-<pre><code>## Loading required package: xml2</code></pre>
-<pre><code>## Warning: package 'xml2' was built under R version 3.4.4</code></pre>
-<pre class="r"><code>library(&quot;dplyr&quot;)</code></pre>
 <pre><code>## Warning: package 'dplyr' was built under R version 3.4.4</code></pre>
 <pre><code>## 
 ## Attaching package: 'dplyr'</code></pre>
@@ -147,19 +142,27 @@ $(document).ready(function () {
 <pre><code>## The following objects are masked from 'package:base':
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>library(&quot;tidyr&quot;)</code></pre>
-<pre><code>## Warning: package 'tidyr' was built under R version 3.4.4</code></pre>
-<pre class="r"><code>library(&quot;ggplot2&quot;)</code></pre>
 <pre><code>## Warning: package 'ggplot2' was built under R version 3.4.4</code></pre>
-<pre class="r"><code>library(&quot;reshape2&quot;)</code></pre>
+<pre><code>## Warning: package 'rvest' was built under R version 3.4.4</code></pre>
+<pre><code>## Loading required package: xml2</code></pre>
+<pre><code>## Warning: package 'xml2' was built under R version 3.4.4</code></pre>
+<pre><code>## Warning: package 'stringr' was built under R version 3.4.4</code></pre>
+<pre><code>## Warning: package 'tidyr' was built under R version 3.4.4</code></pre>
+<pre><code>## Warning: package 'data.table' was built under R version 3.4.4</code></pre>
+<pre><code>## 
+## Attaching package: 'data.table'</code></pre>
+<pre><code>## The following objects are masked from 'package:dplyr':
+## 
+##     between, first, last</code></pre>
 <pre><code>## Warning: package 'reshape2' was built under R version 3.4.4</code></pre>
 <pre><code>## 
 ## Attaching package: 'reshape2'</code></pre>
+<pre><code>## The following objects are masked from 'package:data.table':
+## 
+##     dcast, melt</code></pre>
 <pre><code>## The following object is masked from 'package:tidyr':
 ## 
 ##     smiths</code></pre>
-<pre class="r"><code>library(&quot;stringr&quot;)</code></pre>
-<pre><code>## Warning: package 'stringr' was built under R version 3.4.4</code></pre>
 </div>
 <div id="questions" class="section level2">
 <h2>Questions</h2>
@@ -168,28 +171,78 @@ $(document).ready(function () {
 <ol style="list-style-type: lower-alpha">
 <li>In the IMDB, there are listings of full cast members for movies. Navigate to <a href="http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1" class="uri">http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1</a>. Feel free to View Source to get a good idea of what the page looks like in code.</li>
 </ol>
-<pre class="r"><code>url = &quot;http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1&quot;</code></pre>
+<pre class="r"><code>#Read the information from IMDB
+HPCast &lt;- read_html(&quot;http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1&quot;)</code></pre>
 <ol start="2" style="list-style-type: lower-alpha">
 <li>Scrape the page with any R package that makes things easy for you. Of particular interest is the table of the Cast in order of crediting. Please scrape this table (you might have to fish it out of several of the tables from the page) and make it a data.frame() of the Cast in your R environment</li>
 </ol>
-<pre class="r"><code>page = read_html(url)
-
-movie.nodes &lt;- html_nodes(page,'.titleColumn a')
-
-movie.link = sapply(html_attrs(movie.nodes),`[[`,'href')
-movie.link = paste0(&quot;http://www.imdb.com&quot;,movie.link)
-movie.cast = sapply(html_attrs(movie.nodes),`[[`,'title')
-movie.name = html_text(movie.nodes)</code></pre>
+<pre class="r"><code># Use SelectorGadget to find the correct keywords: .cast_list td:nth-child(2) and .character
+# Scrap the actor data
+actor_data_html &lt;- html_nodes(HPCast,'.cast_list td:nth-child(2)')
+# Convert actor data to text
+actor_data &lt;- html_text(actor_data_html)
+# Scrap character data
+character_data_html &lt;- html_nodes(HPCast,'.character')
+#Convert character data to text
+character_data &lt;- html_text(character_data_html)</code></pre>
 <ol start="3" style="list-style-type: lower-alpha">
 <li>Clean up the table:
 <ol style="list-style-type: decimal">
 <li>It should not have blank observations or rows, a row that should be column names, or just ‘…’</li>
-<li>It should have intuitive column names (ideally 2 to start – Actor and Character)</li>
-<li>In the film, Mr. Warwick plays two characters, which makes his row look a little weird. Please replace his character column with just “Griphook / Professor Filius Flitwick” to make it look better.</li>
-<li>One row might result in “Rest of cast listed alphabetically” – remove this observation.</li>
 </ol></li>
+</ol>
+<pre class="r"><code># Remove the \n in character_data
+character_data &lt;- gsub(&quot;\n&quot;,&quot;&quot;,character_data)
+# Remove extra space
+character_data &lt;- str_squish(character_data)
+# create two data frames
+actor_data = data.frame(actor_data)
+character_data = data.frame(character_data)
+# change actor and character class to character
+actor_data[] &lt;- lapply(actor_data, as.character)
+character_data[] &lt;- lapply(character_data, as.character)</code></pre>
+<pre><code>  2. It should have intuitive column names (ideally 2 to start – Actor and Character)</code></pre>
+<pre class="r"><code># add names
+names(actor_data) = c(&quot;ActorName&quot;)
+names(character_data) = c(&quot;Character&quot;)</code></pre>
+<pre><code>  3. In the film, Mr. Warwick plays two characters, which makes his row look a little weird. Please replace his character column with just “Griphook / Professor Filius Flitwick” to make it look better.
+  4. One row might result in “Rest of cast listed alphabetically” – remove this observation.</code></pre>
+<pre class="r"><code># create two data frames
+actor_data = data.frame(actor_data)
+character_data = data.frame(character_data)
+# change actor and character class to character
+actor_data[] &lt;- lapply(actor_data, as.character)
+character_data[] &lt;- lapply(character_data, as.character)
+# add names
+names(actor_data) = c(&quot;ActorName&quot;)
+names(character_data) = c(&quot;Character&quot;)</code></pre>
+<ol start="4" style="list-style-type: lower-alpha">
 <li>Split the Actor’s name into two columns: FirstName and Surname. Keep in mind that some actors/actresses have middle names as well. Please make sure that the middle names are in the FirstName column, in addition to the first name (example: given the Actor Frank Jeffrey Stevenson, the FirstName column would say “Frank Jeffrey.”)</li>
-<li>Present the first 10 rows of the data.frame() – It should have only FirstName, Surname, and Character columns. ###2. SportsBall (50%)</li>
+</ol>
+<pre class="r"><code>#Split Actor’s name into two columns: FirstName and Surname
+actor_names &lt;- extract(actor_data, ActorName, c(&quot;FirstName&quot;, &quot;Surname&quot;), &quot;(.+) (.+)&quot;)</code></pre>
+<ol start="5" style="list-style-type: lower-alpha">
+<li>Present the first 10 rows of the data.frame() – It should have only FirstName, Surname, and Character columns.</li>
+</ol>
+<pre class="r"><code># Combine the two data frames
+HarryPotterCast &lt;- cbind(actor_names,character_data)
+#Present the first 10 rows of the data frame
+head(HarryPotterCast, 10)</code></pre>
+<pre><code>##    FirstName   Surname                            Character
+## 1      Ralph   Fiennes                       Lord Voldemort
+## 2    Michael    Gambon           Professor Albus Dumbledore
+## 3       Alan   Rickman              Professor Severus Snape
+## 4     Daniel Radcliffe                         Harry Potter
+## 5     Rupert     Grint                          Ron Weasley
+## 6       Emma    Watson                     Hermione Granger
+## 7     Evanna     Lynch                        Luna Lovegood
+## 8   Domhnall   Gleeson                         Bill Weasley
+## 9   Clémence     Poésy                       Fleur Delacour
+## 10   Warwick     Davis Griphook / Professor Filius Flitwick</code></pre>
+</div>
+<div id="sportsball-50" class="section level3">
+<h3>2. SportsBall (50%)</h3>
+<ol style="list-style-type: lower-alpha">
 <li>On the ESPN website, there are statistics of each NBA player. Navigate to the San Antonio Spurs current statistics (likely <a href="http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs" class="uri">http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs</a>). You are interested in the Shooting Statistics table.</li>
 <li>Scrape the page with any R package that makes things easy for you. There are a few tables on the page, so make sure you are targeting specifically the Shooting Statistics table.</li>
 <li>Clean up the table (You might get some warnings if you’re working with tibbles) • You’ll want to create an R data.frame() with one observation for each player. Make sure that you do not accidentally include blank rows, a row of column names, or the Totals row in the table as observations. • The column PLAYER has two variables of interest in it: the player’s name and their position, denoted by 1-2 letters after their name. Split the cells into two columns, one with Name and the other Position. • Check the data type of all columns. Convert relevant columns to numeric. Check the data type of all columns again to confirm that they have changed!</li>
