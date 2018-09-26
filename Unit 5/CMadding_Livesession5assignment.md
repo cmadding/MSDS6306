@@ -17,21 +17,11 @@ output:
    
    Utilize yob2016.txt for this question. This file is a series of popular children’s names born in the year 2016 in the United States.  It consists of three columns with a first name, a gender, and the amount of children given that name.  However, the data is raw and will need cleaning to make it tidy and usable.
 
-   a.	First, import the .txt file into R so you can process it.  Keep in mind this is not a CSV file.  You might have to open the file to see what you’re dealing with.  Assign the resulting data frame to an object, df, that consists of three columns with human-readable column names for each.
+   a.	First, import the .txt file into R so you can process it. Keep in mind this is not a CSV file.  You might have to open the file to see what you’re dealing with.  Assign the resulting data frame to an object, df, that consists of three columns with human-readable column names for each.
 
 ```r
 yob2016 <- read.csv("yob2016.txt", ";", header = FALSE)
-head(yob2016)
-```
-
-```
-##         V1 V2    V3
-## 1     Emma  F 19414
-## 2   Olivia  F 19246
-## 3      Ava  F 16237
-## 4   Sophia  F 16070
-## 5 Isabella  F 14722
-## 6      Mia  F 14366
+df <- data.frame(yob2016)
 ```
    
    

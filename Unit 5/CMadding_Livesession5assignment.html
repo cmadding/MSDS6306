@@ -140,14 +140,7 @@ $(document).ready(function () {
 <li>First, import the .txt file into R so you can process it. Keep in mind this is not a CSV file. You might have to open the file to see what you’re dealing with. Assign the resulting data frame to an object, df, that consists of three columns with human-readable column names for each.</li>
 </ol>
 <pre class="r"><code>yob2016 &lt;- read.csv(&quot;yob2016.txt&quot;, &quot;;&quot;, header = FALSE)
-head(yob2016)</code></pre>
-<pre><code>##         V1 V2    V3
-## 1     Emma  F 19414
-## 2   Olivia  F 19246
-## 3      Ava  F 16237
-## 4   Sophia  F 16070
-## 5 Isabella  F 14722
-## 6      Mia  F 14366</code></pre>
+df &lt;- data.frame(yob2016)</code></pre>
 <ol start="2" style="list-style-type: lower-alpha">
 <li>Display the summary and structure of df</li>
 <li>Your client tells you that there is a problem with the raw file. One name was entered twice and misspelled. The client cannot remember which name it is; there are thousands he saw! But he did mention he accidentally put three y’s at the end of the name. Write an R command to figure out which name it is and display it.</li>
