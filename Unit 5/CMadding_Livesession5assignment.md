@@ -27,6 +27,23 @@ colnames(df) <- c("Name","Gender","Number")
    
    
    b.	Display the summary and structure of df
+
+```r
+summary(df)
+```
+
+```
+##       Name       Gender        Number       
+##  Aalijah:    2   F:18758   Min.   :    5.0  
+##  Aaliyan:    2   M:14111   1st Qu.:    7.0  
+##  Aamari :    2             Median :   12.0  
+##  Aarian :    2             Mean   :  110.7  
+##  Aarin  :    2             3rd Qu.:   30.0  
+##  Aaris  :    2             Max.   :19414.0  
+##  (Other):32857
+```
+   
+   
    c.	Your client tells you that there is a problem with the raw file.  One name was entered twice and misspelled.  The client cannot remember which name it is; there are thousands he saw! But he did mention he accidentally put three y’s at the end of the name.  Write an R command to figure out which name it is and display it.
    d.	Upon finding the misspelled name, please remove this particular observation, as the client says it’s redundant.  Save the remaining dataset as an object: y2016
 
