@@ -133,6 +133,8 @@ $(document).ready(function () {
 <h2>Submission</h2>
 <p>ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMENT. Use RMarkdown to create this file. Formatting can be basic, but it should be easily human-readable. Unless otherwise stated, please enable {r, echo=TRUE} so your code is visible.</p>
 <p>TIPS: If you are having problems with scraping, go to the website to check if it is online. If it is, then take a look at the actual website to verify how it is structured. Feel free to use View Source to narrow down good nodes to use. You are welcome to use any R libraries for this assignment. Off the top of my head, good ones to use might be rvest, dplyr, tidyr, ggplot2, reshape2, or stringr. You don’t need to include install.packages for your final code, but you need library() for each.</p>
+<pre class="r"><code># Load libraries
+library(dplyr)</code></pre>
 <pre><code>## Warning: package 'dplyr' was built under R version 3.4.4</code></pre>
 <pre><code>## 
 ## Attaching package: 'dplyr'</code></pre>
@@ -142,18 +144,24 @@ $(document).ready(function () {
 <pre><code>## The following objects are masked from 'package:base':
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(ggplot2)</code></pre>
 <pre><code>## Warning: package 'ggplot2' was built under R version 3.4.4</code></pre>
+<pre class="r"><code>library(rvest)</code></pre>
 <pre><code>## Warning: package 'rvest' was built under R version 3.4.4</code></pre>
 <pre><code>## Loading required package: xml2</code></pre>
 <pre><code>## Warning: package 'xml2' was built under R version 3.4.4</code></pre>
+<pre class="r"><code>library(stringr)</code></pre>
 <pre><code>## Warning: package 'stringr' was built under R version 3.4.4</code></pre>
+<pre class="r"><code>library(tidyr)</code></pre>
 <pre><code>## Warning: package 'tidyr' was built under R version 3.4.4</code></pre>
+<pre class="r"><code>library(data.table)</code></pre>
 <pre><code>## Warning: package 'data.table' was built under R version 3.4.4</code></pre>
 <pre><code>## 
 ## Attaching package: 'data.table'</code></pre>
 <pre><code>## The following objects are masked from 'package:dplyr':
 ## 
 ##     between, first, last</code></pre>
+<pre class="r"><code>library(reshape2)</code></pre>
 <pre><code>## Warning: package 'reshape2' was built under R version 3.4.4</code></pre>
 <pre><code>## 
 ## Attaching package: 'reshape2'</code></pre>
@@ -244,10 +252,107 @@ head(HarryPotterCast, 10)</code></pre>
 <h3>2. SportsBall (50%)</h3>
 <ol style="list-style-type: lower-alpha">
 <li>On the ESPN website, there are statistics of each NBA player. Navigate to the San Antonio Spurs current statistics (likely <a href="http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs" class="uri">http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs</a>). You are interested in the Shooting Statistics table.</li>
-<li>Scrape the page with any R package that makes things easy for you. There are a few tables on the page, so make sure you are targeting specifically the Shooting Statistics table.</li>
-<li>Clean up the table (You might get some warnings if you’re working with tibbles) • You’ll want to create an R data.frame() with one observation for each player. Make sure that you do not accidentally include blank rows, a row of column names, or the Totals row in the table as observations. • The column PLAYER has two variables of interest in it: the player’s name and their position, denoted by 1-2 letters after their name. Split the cells into two columns, one with Name and the other Position. • Check the data type of all columns. Convert relevant columns to numeric. Check the data type of all columns again to confirm that they have changed!</li>
-<li>Create a colorful bar chart that shows the Field Goals Percentage Per Game for each person. It will be graded on the following criteria. • Informative Title, centered • Relevant x and y axis labels (not simply variables names!) • Human-readable axes with no overlap (you might have to flip x and y to fix that). Note: You do not have to convert the decimal to a percentage. • Color the columns by the team member’s position (so, all PF’s should have the same color, etc.) ###Reminder To complete this assignment, please submit one RMarkdown and matching HTML file. Please submit all files at the same time; only one submission is granted. Good luck!</li>
 </ol>
+<pre class="r"><code>#Read data in from web page
+spurs_page &lt;- read_html('http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs')</code></pre>
+<ol start="2" style="list-style-type: lower-alpha">
+<li>Scrape the page with any R package that makes things easy for you. There are a few tables on the page, so make sure you are targeting specifically the Shooting Statistics table.</li>
+</ol>
+<pre class="r"><code>#pull table from the web data
+spurs_tables &lt;- html_nodes(spurs_page, 'table')</code></pre>
+<ol start="3" style="list-style-type: lower-alpha">
+<li>Clean up the table (You might get some warnings if you’re working with tibbles) • You’ll want to create an R data.frame() with one observation for each player. Make sure that you do not accidentally include blank rows, a row of column names, or the Totals row in the table as observations.</li>
+</ol>
+<pre class="r"><code># Scrape data from the second table on the page and output it in a data frame
+spurs_stats &lt;- html_table(spurs_tables, fill = TRUE)[[2]]
+# pull off the header information
+spurs_stat_header &lt;- dplyr::slice(spurs_stats,2)
+# take out the first 2 header rows and totals row
+spurs_stats &lt;- spurs_stats[-c(1, 2, 20), ]
+# change row.names column to first, rename to rn 
+spurs_stats &lt;- setDT(spurs_stats, keep.rownames = TRUE)[]
+# take out the rn column
+spurs_stats$rn = NULL
+# Add header names to data frame
+names(spurs_stats) = as.character(spurs_stat_header)</code></pre>
+<pre><code>  • The column PLAYER has two variables of interest in it: the player’s name and their position, denoted by 1-2 letters after their name. Split the cells into two columns, one with Name and the other Position.</code></pre>
+<pre class="r"><code>#Split the cells into two columns: Name and Position, using the &quot;,&quot;
+spurs_player_pos &lt;- colsplit(spurs_stats$PLAYER, &quot;,&quot;, c(&quot;Name&quot;, &quot;Position&quot;))
+#Remove the original PLAYER coumn
+spurs_stats$PLAYER = NULL
+#combines the new colum into the data frame
+spurs_stats &lt;- cbind(spurs_player_pos,spurs_stats)</code></pre>
+<pre><code>  • Check the data type of all columns. Convert relevant columns to numeric. Check the data type of all columns again to confirm that they have changed!</code></pre>
+<pre class="r"><code>#Check the data type of all columns
+str(spurs_stats)</code></pre>
+<pre><code>## 'data.frame':    15 obs. of  16 variables:
+##  $ Name    : chr  &quot;LaMarcus Aldridge&quot; &quot;Patty Mills&quot; &quot;Rudy Gay&quot; &quot;Manu Ginobili&quot; ...
+##  $ Position: chr  &quot; PF&quot; &quot; PG&quot; &quot; SF&quot; &quot; G&quot; ...
+##  $ FGM     : chr  &quot;7.4&quot; &quot;5.0&quot; &quot;5.2&quot; &quot;3.0&quot; ...
+##  $ FGA     : chr  &quot;16.0&quot; &quot;11.4&quot; &quot;13.0&quot; &quot;7.4&quot; ...
+##  $ FG%     : chr  &quot;.463&quot; &quot;.439&quot; &quot;.400&quot; &quot;.405&quot; ...
+##  $ 3PM     : chr  &quot;0.6&quot; &quot;2.6&quot; &quot;0.8&quot; &quot;1.2&quot; ...
+##  $ 3PA     : chr  &quot;1.0&quot; &quot;7.0&quot; &quot;3.6&quot; &quot;3.6&quot; ...
+##  $ 3P%     : chr  &quot;.600&quot; &quot;.371&quot; &quot;.222&quot; &quot;.333&quot; ...
+##  $ FTM     : chr  &quot;8.2&quot; &quot;0.8&quot; &quot;1.0&quot; &quot;1.8&quot; ...
+##  $ FTA     : chr  &quot;8.4&quot; &quot;1.0&quot; &quot;1.8&quot; &quot;2.2&quot; ...
+##  $ FT%     : chr  &quot;0.98&quot; &quot;0.80&quot; &quot;0.56&quot; &quot;0.82&quot; ...
+##  $ 2PM     : chr  &quot;6.8&quot; &quot;2.4&quot; &quot;4.4&quot; &quot;1.8&quot; ...
+##  $ 2PA     : chr  &quot;15.0&quot; &quot;4.4&quot; &quot;9.4&quot; &quot;3.8&quot; ...
+##  $ 2P%     : chr  &quot;.453&quot; &quot;.545&quot; &quot;.468&quot; &quot;.474&quot; ...
+##  $ PPS     : chr  &quot;1.475&quot; &quot;1.175&quot; &quot;.938&quot; &quot;1.216&quot; ...
+##  $ AFG%    : chr  &quot;0.48&quot; &quot;0.55&quot; &quot;0.43&quot; &quot;0.49&quot; ...</code></pre>
+<pre class="r"><code>#Convert relevant columns to numeric
+spurs_stats[,3:16] &lt;- lapply(spurs_stats[,3:16], as.numeric)
+#Check the data type of all columns again to confirm that they have changed
+str(spurs_stats)</code></pre>
+<pre><code>## 'data.frame':    15 obs. of  16 variables:
+##  $ Name    : chr  &quot;LaMarcus Aldridge&quot; &quot;Patty Mills&quot; &quot;Rudy Gay&quot; &quot;Manu Ginobili&quot; ...
+##  $ Position: chr  &quot; PF&quot; &quot; PG&quot; &quot; SF&quot; &quot; G&quot; ...
+##  $ FGM     : num  7.4 5 5.2 3 2.8 2.8 2 2.4 1.3 1.6 ...
+##  $ FGA     : num  16 11.4 13 7.4 6.2 7.4 4 4 4.3 6 ...
+##  $ FG%     : num  0.463 0.439 0.4 0.405 0.452 0.378 0.5 0.6 0.294 0.267 ...
+##  $ 3PM     : num  0.6 2.6 0.8 1.2 0.8 0 0.2 0 0.5 1 ...
+##  $ 3PA     : num  1 7 3.6 3.6 1.2 1 0.6 0.8 2.3 4 ...
+##  $ 3P%     : num  0.6 0.371 0.222 0.333 0.667 0 0.333 0 0.222 0.25 ...
+##  $ FTM     : num  8.2 0.8 1 1.8 1.4 1 1.8 0.6 1.3 0 ...
+##  $ FTA     : num  8.4 1 1.8 2.2 1.8 1.4 2 0.8 1.8 0 ...
+##  $ FT%     : num  0.98 0.8 0.56 0.82 0.78 0.71 0.9 0.75 0.71 0 ...
+##  $ 2PM     : num  6.8 2.4 4.4 1.8 2 2.8 1.8 2.4 0.8 0.6 ...
+##  $ 2PA     : num  15 4.4 9.4 3.8 5 6.4 3.4 3.2 2 2 ...
+##  $ 2P%     : num  0.453 0.545 0.468 0.474 0.4 0.438 0.529 0.75 0.375 0.3 ...
+##  $ PPS     : num  1.475 1.175 0.938 1.216 1.258 ...
+##  $ AFG%    : num  0.48 0.55 0.43 0.49 0.52 0.38 0.53 0.6 0.35 0.35 ...</code></pre>
+<ol start="4" style="list-style-type: lower-alpha">
+<li>Create a colorful bar chart that shows the Field Goals Percentage Per Game for each person. It will be graded on the following criteria.</li>
+</ol>
+<pre class="r"><code>#Get the Field Goals Percentage Per Game for each person
+spurs_fgpct &lt;- select(spurs_stats, contains(&quot;Name&quot;),(&quot;Position&quot;),(&quot;FG%&quot;))
+#convert FG to a factor for the graph
+spurs_fgpct$`FG%` &lt;- as.factor(spurs_fgpct$`FG%`)
+#group graph into Position
+spurs_fgpct &lt;- dplyr::arrange(spurs_fgpct, desc(Position))</code></pre>
+<pre><code>## Warning: package 'bindrcpp' was built under R version 3.4.4</code></pre>
+<pre><code>  • Informative Title, centered</code></pre>
+<pre class="r"><code>#updates ggplot theme to center the title
+theme_update(plot.title = element_text(hjust = 0.5))</code></pre>
+<pre><code>  • Relevant x and y axis labels (not simply variables names!)
+  • Human-readable axes with no overlap (you might have to flip x and y to fix that). Note: You do not have to convert the decimal to a percentage.
+  • Color the columns by the team member’s position (so, all PF’s should have the same color, etc.)
+  </code></pre>
+<pre class="r"><code>#creates second name coloum as a factor
+spurs_fgpct$Name2 &lt;- factor(spurs_fgpct$Name, as.character(spurs_fgpct$Name))
+
+#create the plot using the updated theme to center the title
+spurs_FG_player &lt;- ggplot(spurs_fgpct, aes(x=Name2, y=`FG%`, fill=Position)) +  geom_bar(stat=&quot;identity&quot;) + theme_update() + coord_flip() +
+  labs(title =&quot;Field Goal % by Player and Position&quot;, x = &quot;Player&quot;, y = &quot;Field Goal %&quot;)
+#prints the plot
+spurs_FG_player</code></pre>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="reminder" class="section level3">
+<h3>Reminder</h3>
+<p>To complete this assignment, please submit one RMarkdown and matching HTML file. Please submit all files at the same time; only one submission is granted. Good luck!</p>
 </div>
 </div>
 
