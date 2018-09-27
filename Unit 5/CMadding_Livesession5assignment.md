@@ -20,8 +20,11 @@ output:
    a.	First, import the .txt file into R so you can process it. Keep in mind this is not a CSV file.  You might have to open the file to see what you’re dealing with.  Assign the resulting data frame to an object, df, that consists of three columns with human-readable column names for each.
 
 ```r
+#Read in the 2015 data
 yob2016 <- read.csv("yob2016.txt", ";", header = FALSE)
+#Change the name
 df <- data.frame(yob2016)
+#name the columns
 colnames(df) <- c("Name","Gender","Number")
 ```
    
@@ -76,24 +79,157 @@ yyyname
 y2016 <- df[-grep("yyy", df$Name),]
 ```
 
-
 ####2.	Data Merging (30 points):
    
    Utilize yob2015.txt for this question.  This file is similar to yob2016, but contains names, gender, and total children given that name for the year 2015.
 
    a.	Like 1a, please import the .txt file into R.  Look at the file before you do.  You might have to change some options to import it properly.  Again, please give the dataframe human-readable column names. Assign the dataframe to y2015.
-   b.	Display the last ten rows in the dataframe.  Describe something you find interesting about these 10 rows.
+
+```r
+#Read in the 2015 data and set it for a comma
+y2015 <- read.csv("yob2015.txt", ",", header = FALSE)
+#name the columns
+colnames(y2015) <- c("Name","Gender","Number")
+#Change name to character to match 2016 data
+y2015$Name <- as.character(y2015$Name)
+```
+
+   b.	Display the last ten rows in the dataframe. Describe something you find interesting about these 10 rows.
+
+#####I found it insteresting that the last 10 rows contained only males and had only 5 for each name.
+
+
+```r
+#displat the last 10 rows
+tail(y2015, 10)
+```
+
+```
+##         Name Gender Number
+## 33054   Ziyu      M      5
+## 33055   Zoel      M      5
+## 33056  Zohar      M      5
+## 33057 Zolton      M      5
+## 33058   Zyah      M      5
+## 33059 Zykell      M      5
+## 33060 Zyking      M      5
+## 33061  Zykir      M      5
+## 33062  Zyrus      M      5
+## 33063   Zyus      M      5
+```
+   
    c.	Merge y2016 and y2015 by your Name column; assign it to final.  The client only cares about names that have data for both 2016 and 2015; there should be no NA values in either of your amount of children rows after merging.
+
+```r
+#merge 2015 and 2016 data by Name
+final <- merge(y2016, y2015, all = FALSE, by = c("Name", "Gender"))
+#renaming the columns to make them more readable
+colnames(final) <- c("Name", "Gender", "Total2016", "Total2015")
+#getting a total of NAs in each column
+colSums(is.na.data.frame(final))
+```
+
+```
+##      Name    Gender Total2016 Total2015 
+##         0         0         0         0
+```
+   
 
 ####3.	Data Summary (30 points):
 
    Utilize your data frame object final for this part.
 
-   a.	Create a new column called “Total” in final that adds the amount of children in 2015 and 2016 together.  In those two years combined, how many people were given popular names?
-   b.	Sort the data by Total.  What are the top 10 most popular names?
-   c.	The client is expecting a girl!  Omit boys and give the top 10 most popular girl’s names.
-   d.	Write these top 10 girl names and their Totals to a CSV file.  Leave out the other columns entirely.
+   a.	Create a new column called “Total” in final that adds the amount of children in 2015 and 2016 together.
+
+```r
+#create a Total column by adding 2015 and 2016 data
+final$Total <- with(final, Total2016 + Total2015)
+```
+   In those two years combined, how many people were given popular names?
+
+```r
+#add together total ampunt of names
+sum(final$Total)
+```
+
+```
+## [1] 7239231
+```
    
+   b.	Sort the data by Total. What are the top 10 most popular names?
+
+```r
+#final sorted by Total
+final <- final[order(-final$Total),]
+#Looking at the top 10 names
+head(final, 10)
+```
+
+```
+##           Name Gender Total2016 Total2015 Total
+## 8290      Emma      F     19414     20415 39829
+## 19886   Olivia      F     19246     19638 38884
+## 19594     Noah      M     19015     19594 38609
+## 16114     Liam      M     18138     18330 36468
+## 23273   Sophia      F     16070     17381 33451
+## 3252       Ava      F     16237     16340 32577
+## 17715    Mason      M     15192     16591 31783
+## 25241  William      M     15668     15863 31531
+## 10993    Jacob      M     14416     15914 30330
+## 10682 Isabella      F     14722     15574 30296
+```
+   c.	The client is expecting a girl!  Omit boys and give the top 10 most popular girl’s names.
+
+```r
+#create top girls name list
+topGirls <- final[final$Gender == "F",] #remove M from final data
+#create top boys name list
+topBoys <- final[final$Gender == "M",] #remove F from final data
+#create a top 10 girls list
+top10Girls <- topGirls[1:10,]
+top10Girls
+```
+
+```
+##            Name Gender Total2016 Total2015 Total
+## 8290       Emma      F     19414     20415 39829
+## 19886    Olivia      F     19246     19638 38884
+## 23273    Sophia      F     16070     17381 33451
+## 3252        Ava      F     16237     16340 32577
+## 10682  Isabella      F     14722     15574 30296
+## 18247       Mia      F     14366     14871 29237
+## 5493  Charlotte      F     13030     11381 24411
+## 277     Abigail      F     11699     12371 24070
+## 8273      Emily      F     10926     11766 22692
+## 9980     Harper      F     10733     10283 21016
+```
+   d.	Write these top 10 girl names and their Totals to a CSV file. Leave out the other columns entirely.
+
+```r
+#create a top 10 with just Name and Total
+listTop10Girls <- within(top10Girls, rm("Gender","Total2016","Total2015"))
+listTop10Girls
+```
+
+```
+##            Name Total
+## 8290       Emma 39829
+## 19886    Olivia 38884
+## 23273    Sophia 33451
+## 3252        Ava 32577
+## 10682  Isabella 30296
+## 18247       Mia 29237
+## 5493  Charlotte 24411
+## 277     Abigail 24070
+## 8273      Emily 22692
+## 9980     Harper 21016
+```
+
+```r
+#export the top 10 to a CSV file
+write.csv(listTop10Girls, "listTop10Girls.csv")
+```
+
 ####4.	Upload to GitHub (10 points):
 
    Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week).  The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in.  You are welcome and encouraged to add other files—just make sure you have a description and directions that are helpful for the grader.
