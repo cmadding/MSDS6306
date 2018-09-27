@@ -29,6 +29,17 @@ colnames(df) <- c("Name","Gender","Number")
    b.	Display the summary and structure of df
 
 ```r
+str(df)
+```
+
+```
+## 'data.frame':	32869 obs. of  3 variables:
+##  $ Name  : Factor w/ 30295 levels "Aaban","Aabha",..: 9317 22546 3770 26409 12019 20596 6185 339 9298 11222 ...
+##  $ Gender: Factor w/ 2 levels "F","M": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Number: int  19414 19246 16237 16070 14722 14366 13030 11699 10926 10733 ...
+```
+
+```r
 summary(df)
 ```
 
@@ -42,10 +53,29 @@ summary(df)
 ##  Aaris  :    2             Max.   :19414.0  
 ##  (Other):32857
 ```
-   
-   
-   c.	Your client tells you that there is a problem with the raw file.  One name was entered twice and misspelled.  The client cannot remember which name it is; there are thousands he saw! But he did mention he accidentally put three y’s at the end of the name.  Write an R command to figure out which name it is and display it.
-   d.	Upon finding the misspelled name, please remove this particular observation, as the client says it’s redundant.  Save the remaining dataset as an object: y2016
+
+   c.	Your client tells you that there is a problem with the raw file. One name was entered twice and misspelled.  The client cannot remember which name it is; there are thousands he saw! But he did mention he accidentally put three y’s at the end of the name.  Write an R command to figure out which name it is and display it.
+
+```r
+#Change name to character
+df$Name <- as.character(df$Name)
+#find mispelled name
+yyyname <- df[grep("yyy", df$Name), ]
+yyyname
+```
+
+```
+##         Name Gender Number
+## 212 Fionayyy      F   1547
+```
+
+   d.	Upon finding the misspelled name, please remove this particular observation, as the client says it’s redundant. Save the remaining dataset as an object: y2016
+
+```r
+#remove the yyyname and rename the df
+y2016 <- df[-grep("yyy", df$Name),]
+```
+
 
 ####2.	Data Merging (30 points):
    

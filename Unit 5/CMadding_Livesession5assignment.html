@@ -145,6 +145,11 @@ colnames(df) &lt;- c(&quot;Name&quot;,&quot;Gender&quot;,&quot;Number&quot;)</co
 <ol start="2" style="list-style-type: lower-alpha">
 <li>Display the summary and structure of df</li>
 </ol>
+<pre class="r"><code>str(df)</code></pre>
+<pre><code>## 'data.frame':    32869 obs. of  3 variables:
+##  $ Name  : Factor w/ 30295 levels &quot;Aaban&quot;,&quot;Aabha&quot;,..: 9317 22546 3770 26409 12019 20596 6185 339 9298 11222 ...
+##  $ Gender: Factor w/ 2 levels &quot;F&quot;,&quot;M&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Number: int  19414 19246 16237 16070 14722 14366 13030 11699 10926 10733 ...</code></pre>
 <pre class="r"><code>summary(df)</code></pre>
 <pre><code>##       Name       Gender        Number       
 ##  Aalijah:    2   F:18758   Min.   :    5.0  
@@ -156,8 +161,19 @@ colnames(df) &lt;- c(&quot;Name&quot;,&quot;Gender&quot;,&quot;Number&quot;)</co
 ##  (Other):32857</code></pre>
 <ol start="3" style="list-style-type: lower-alpha">
 <li>Your client tells you that there is a problem with the raw file. One name was entered twice and misspelled. The client cannot remember which name it is; there are thousands he saw! But he did mention he accidentally put three y’s at the end of the name. Write an R command to figure out which name it is and display it.</li>
+</ol>
+<pre class="r"><code>#Change name to character
+df$Name &lt;- as.character(df$Name)
+#find mispelled name
+yyyname &lt;- df[grep(&quot;yyy&quot;, df$Name), ]
+yyyname</code></pre>
+<pre><code>##         Name Gender Number
+## 212 Fionayyy      F   1547</code></pre>
+<ol start="4" style="list-style-type: lower-alpha">
 <li>Upon finding the misspelled name, please remove this particular observation, as the client says it’s redundant. Save the remaining dataset as an object: y2016</li>
 </ol>
+<pre class="r"><code>#remove the yyyname and rename the df
+y2016 &lt;- df[-grep(&quot;yyy&quot;, df$Name),]</code></pre>
 </div>
 <div id="data-merging-30-points" class="section level4">
 <h4>2. Data Merging (30 points):</h4>
