@@ -206,36 +206,85 @@ top10Girls
    d.	Write these top 10 girl names and their Totals to a CSV file. Leave out the other columns entirely.
 
 ```r
+#remove the id column
+row.names(top10Girls) <- c()
 #create a top 10 with just Name and Total
 listTop10Girls <- within(top10Girls, rm("Gender","Total2016","Total2015"))
 listTop10Girls
 ```
 
 ```
-##            Name Total
-## 8290       Emma 39829
-## 19886    Olivia 38884
-## 23273    Sophia 33451
-## 3252        Ava 32577
-## 10682  Isabella 30296
-## 18247       Mia 29237
-## 5493  Charlotte 24411
-## 277     Abigail 24070
-## 8273      Emily 22692
-## 9980     Harper 21016
+##         Name Total
+## 1       Emma 39829
+## 2     Olivia 38884
+## 3     Sophia 33451
+## 4        Ava 32577
+## 5   Isabella 30296
+## 6        Mia 29237
+## 7  Charlotte 24411
+## 8    Abigail 24070
+## 9      Emily 22692
+## 10    Harper 21016
 ```
 
 ```r
 #export the top 10 to a CSV file
 write.csv(listTop10Girls, "listTop10Girls.csv")
+#check to make sure the file was exported
+list.files()
+```
+
+```
+##  [1] "CMadding_Livesession5assignment.html"
+##  [2] "CMadding_Livesession5assignment.md"  
+##  [3] "CMadding_Livesession5assignment.Rmd" 
+##  [4] "codebook_final.Rmd"                  
+##  [5] "codebook_y2015.Rmd"                  
+##  [6] "codebook_y2016.pdf"                  
+##  [7] "codebook_y2016.Rmd"                  
+##  [8] "codebook_yob2016.Rmd"                
+##  [9] "listTop10Girls.csv"                  
+## [10] "Unit 05.Rproj"                       
+## [11] "yob2015.txt"                         
+## [12] "yob2016.txt"
 ```
 
 ####4.	Upload to GitHub (10 points):
 
-   Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week).  The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in.  You are welcome and encouraged to add other files—just make sure you have a description and directions that are helpful for the grader.
-    
+   Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week). The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in. You are welcome and encouraged to add other files—just make sure you have a description and directions that are helpful for the grader.
+
+```
+## Data report generation is finished. Please wait while your output file is being rendered.
+```
+
+```
+## 
+##  Is codebook_y2015.docx open on your computer? Please close it as fast as possible to avoid problems!
+```
+
+```
+## Data report generation is finished. Please wait while your output file is being rendered.
+```
+
+```
+## 
+##  Is codebook_yob2016.docx open on your computer? Please close it as fast as possible to avoid problems!
+```
+
+```
+## Data report generation is finished. Please wait while your output file is being rendered.
+```
+
+```
+## 
+##  Is codebook_final.docx open on your computer? Please close it as fast as possible to avoid problems!
+```
+
+All files maybe accesses at:
+https://github.com/cmadding/MSDS6306/tree/master/Unit%205
+
 ####Reminder
 
-To complete this assignment, please submit one RMarkdown and matching HTML file before 11:59 pm Monday October 1.  You do not need to submit a link to your GitHub: just note where the assignment is (URL) in your RMarkdown file.  Make sure it is public!! Please submit all files at the same time; only one submission is granted.
+To complete this assignment, please submit one RMarkdown and matching HTML file before 11:59 pm Monday October 1. You do not need to submit a link to your GitHub: just note where the assignment is (URL) in your RMarkdown file. Make sure it is public!! Please submit all files at the same time; only one submission is granted.
 
 Good luck!

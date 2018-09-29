@@ -46,7 +46,7 @@ yyyname
 ```
 
    d.	Upon finding the misspelled name, please remove this particular observation, as the client says it’s redundant. Save the remaining dataset as an object: y2016
-```{r}
+```{r remove yyy, echo=TRUE}
 #remove the yyyname and rename the df
 y2016 <- df[-grep("yyy", df$Name),]
 ```
@@ -69,13 +69,13 @@ y2015$Name <- as.character(y2015$Name)
 
 #####I found it insteresting that the last 10 rows contained only males and had only 5 for each name.
 
-```{r last rows}
+```{r last rows, echo=TRUE}
 #displat the last 10 rows
 tail(y2015, 10)
 ```
    
    c.	Merge y2016 and y2015 by your Name column; assign it to final.  The client only cares about names that have data for both 2016 and 2015; there should be no NA values in either of your amount of children rows after merging.
-```{r merge data}
+```{r merge data, echo=TRUE}
 #merge 2015 and 2016 data by Name
 final <- merge(y2016, y2015, all = FALSE, by = c("Name", "Gender"))
 #renaming the columns to make them more readable
@@ -90,25 +90,25 @@ colSums(is.na.data.frame(final))
    Utilize your data frame object final for this part.
 
    a.	Create a new column called “Total” in final that adds the amount of children in 2015 and 2016 together.
-```{r create Total}
+```{r create Total, echo=TRUE}
 #create a Total column by adding 2015 and 2016 data
 final$Total <- with(final, Total2016 + Total2015)
 ```
    In those two years combined, how many people were given popular names?
-```{r sun Total}
+```{r sun Total, echo=TRUE}
 #add together total ampunt of names
 sum(final$Total)
 ```
    
    b.	Sort the data by Total. What are the top 10 most popular names?
-```{r sort and top 10}
+```{r sort and top 10, echo=TRUE}
 #final sorted by Total
 final <- final[order(-final$Total),]
 #Looking at the top 10 names
 head(final, 10)
 ```
    c.	The client is expecting a girl!  Omit boys and give the top 10 most popular girl’s names.
-```{r remove boys}
+```{r remove boys, echo=TRUE}
 #create top girls name list
 topGirls <- final[final$Gender == "F",] #remove M from final data
 #create top boys name list
@@ -118,20 +118,35 @@ top10Girls <- topGirls[1:10,]
 top10Girls
 ```
    d.	Write these top 10 girl names and their Totals to a CSV file. Leave out the other columns entirely.
-```{r export girl list}
+```{r export girl list, echo=TRUE}
+#remove the id column
+row.names(top10Girls) <- c()
 #create a top 10 with just Name and Total
 listTop10Girls <- within(top10Girls, rm("Gender","Total2016","Total2015"))
 listTop10Girls
 #export the top 10 to a CSV file
 write.csv(listTop10Girls, "listTop10Girls.csv")
+#check to make sure the file was exported
+list.files()
 ```
 
 ####4.	Upload to GitHub (10 points):
 
-   Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week).  The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in.  You are welcome and encouraged to add other files—just make sure you have a description and directions that are helpful for the grader.
-    
+   Push at minimum your RMarkdown for this homework assignment and a Codebook to one of your GitHub repositories (you might place this in a Homework repo like last week). The Codebook should contain a short definition of each object you create, and if creating multiple files, which file it is contained in. You are welcome and encouraged to add other files—just make sure you have a description and directions that are helpful for the grader.
+```{r codebook, echo=FALSE}
+#install package to create codebook
+#install.packages("dataMaid")
+suppressPackageStartupMessages(library("dataMaid"))
+makeCodebook(y2015, replace = TRUE)
+makeCodebook(yob2016, replace = TRUE)
+makeCodebook(final, replace = TRUE)
+```
+
+All files maybe accesses at:
+https://github.com/cmadding/MSDS6306/tree/master/Unit%205
+
 ####Reminder
 
-To complete this assignment, please submit one RMarkdown and matching HTML file before 11:59 pm Monday October 1.  You do not need to submit a link to your GitHub: just note where the assignment is (URL) in your RMarkdown file.  Make sure it is public!! Please submit all files at the same time; only one submission is granted.
+To complete this assignment, please submit one RMarkdown and matching HTML file before 11:59 pm Monday October 1. You do not need to submit a link to your GitHub: just note where the assignment is (URL) in your RMarkdown file. Make sure it is public!! Please submit all files at the same time; only one submission is granted.
 
 Good luck!
