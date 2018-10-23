@@ -2,15 +2,17 @@
 x_1 <- rnorm(1000,5,7) #1000 Random numbers mean 5 and standard deviation of 7
 
 #Simulate gamma distrubation
-x_2 <- rgamma (n = 1000, shape = 3, scale = 2)
+x_2 <- rgamma (n = 1000, shape = 1, scale = 1)
 
 #Plot data
 hist(x_1, col = "gray") #plot p(x)
 hist(x_2, col = "blue") #plot p(x)
 
 true_error <- rnorm(1000,0,2)
-true_beta_0 <- 1.1
-true_beta_1 <- -8.2
+#true_beta_0 <- 1.1
+true_beta_0 <- 3.1
+#true_beta_1 <- -8.2
+true_beta_1 <- 7.3
 true_beta_2 <- 6.5
 
 y_1 <- true_beta_0 + true_beta_1*x_1 + true_error
