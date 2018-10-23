@@ -16,19 +16,19 @@ true_beta_2 <- 6.5
 y_1 <- true_beta_0 + true_beta_1*x_1 + true_error
 hist(y_1) #plot p(y_1)
 plot(x_1,y_1, pch=20, col= "red", xlab = "1000 Random Numbers with rnorm",
-     ylab = "Y_1") #plot p(x,y)
+     ylab = "Y_1", abline(lm(y_1 ~ x_1))) #plot p(x,y)
 
 #using gamma distrubation
 y_2 <- true_beta_0 + true_beta_1*x_2 + true_error
 hist(y_2) #plot p(y_2)
 plot(x_2,y_2, pch=20, col= "red", xlab = "1000 Random Numbers with rgamma",
-     ylab = "Y_2") #plot p(x,y)
+     ylab = "Y_2", abline(lm(y_2 ~ x_2))) #plot p(x,y)
 
 #using both distrubations
 y_3 <- true_beta_0 + true_beta_1*x_1 + true_beta_2*x_2 + true_error
 hist(y_3) #plot p(y_2)
 plot(x_2,y_3, pch=20, col= "red", xlab = "Random Numbers with both",
-     ylab = "Y_3") #plot p(x,y)
+     ylab = "Y_3", abline(lm(y_3 ~ x_2))) #plot p(x,y)
 
 #checking the original data
 true_beta_0
