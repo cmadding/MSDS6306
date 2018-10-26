@@ -44,6 +44,8 @@ model_3 <- lm(formula = y_3~x_1+x_2)
 
 lm(formula = y_1 ~ x_1)
 coefs_1 <- coef(model_1)
+confint(model_1)
+predict(model_1)
 
 lm(formula = y_2 ~ x_2)
 coefs_2 <- coef(model_2)
