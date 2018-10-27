@@ -1,0 +1,257 @@
+---
+title: "CMadding_Livesession9assignment"
+author: "Chad Madding"
+date: "October 27, 2018"
+output:
+  html_document:
+    keep_md: yes
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+####MSDS 6306: Doing Data Science
+
+####Live session Unit 9 assignment
+
+####Due: Monday October 29th at 11:59pm
+
+##Submission
+
+ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMENT. Use RMarkdown to create this file. Formatting can be basic, but it should be easily human-readable. Unless otherwise stated, please enable {r, echo=TRUE} so your code is visible. 
+
+##Questions
+
+**Background:** Brewmeisters in Colorado and Texas have teamed up to analyze the relationship between ABV and IBU in each of their states.  Use the data sets from the project to help them in their analysis.  There three main questions of interest are 1) Is there a significant linear relationship between ABV (response) and IBU (explanatory), 2) Is this relationship different between beers in Colorado and Texas and 3) Is there a significant quadratic component in this relationship for either Colorado or Texas or both?  
+
+```{r librariesAndHelpers, message=FALSE}
+#R libraries used in the report
+#load libraries
+list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
+
+library(plyr)
+library(sjPlot)
+library(dplyr)
+library(caTools)
+library(ggplot2)
+library(pastecs)
+library(reshape2)
+library(ggpubr)
+library(kableExtra)
+```
+
+##A. Clean an prepare the data:
+
+1. Create column for brewery ID that is common to both datasets similar to what you did in the project. So we can merge!
+
+```{r trim white space, message=FALSE, echo=TRUE}
+#function to trim white space
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+```
+
+```{r readData, message=FALSE, echo=TRUE}
+#read in the two datasets
+breweries <- read.csv("Data/Breweries.csv")
+#States has a leading space, removing it
+breweries$State <- trim(breweries$State)
+beers <- read.csv("Data/Beers.csv")
+```
+
+2. Merge the beer and brewery data into a single dataframe.
+
+```{r mergeData, message=FALSE, echo=TRUE}
+#rename Brew_ID to Brewery_id to merge data
+colnames(breweries)[1] <- "Brewery_id"
+#both have a "Name" two for different groups
+#rename Name to Brewery_Name
+colnames(breweries)[2] <- "Brewery_Name"
+#rename Name to Beer_Name
+colnames(beers)[1] <- "Beer_Name"
+#merge both data sets
+brew_beer <- merge.data.frame(beers, breweries, by = "Brewery_id")
+```
+
+3. Clean the State Column … get rid of extraneous white space.
+
+4. Create One Dataset that has only Colorado and Texas beers and no IBU NAs … name it “beerCOTX”
+
+```{r create beerCOTX, echo=TRUE}
+#create beerCOTX with only TX and CO, removing NAs from IBU
+beerCOTX <- filter(brew_beer,!is.na(IBU), State == "CO" | State == "TX")
+```
+
+5. Order beerCOTX by IBU (ascending) ... this will be important later in graphing
+```{r}
+beerCOTX <- beerCOTX[order(beerCOTX$IBU),]
+```
+
+##B. Create an initial plots of the data
+
+6. Plot ABV v. IBU for both Colorado and Texas (two separate plots) … use ggplot and facets.
+```{r scatterPlot ABV v IBU, echo=TRUE}
+#ggplot to check for correlation between IBU and ABV in Colorado
+beerCO <- filter(beerCOTX, State == "CO")
+ggplot(beerCO, aes(x = IBU, y = ABV)) + geom_point(na.rm=TRUE) + geom_smooth(method=lm,se=FALSE, na.rm=TRUE) + ggtitle("ABV V. IBU for Colorado")
+
+#ggplot to check for correlation between IBU and ABV in Texas
+beerTX <- filter(beerCOTX, State == "TX")
+ggplot(beerTX, aes(x = IBU, y = ABV)) + geom_point(na.rm=TRUE) + geom_smooth(method=lm,se=FALSE, na.rm=TRUE) + ggtitle("ABV V. IBU for Texas")
+```
+
+
+##C. Model the data
+
+7. For each state, fit a simple linear regression model (Model 1:  ABV= β_0+β_1 IBU) to assess the relationship between ABV and IBU. Use the regular plot function in base R (not ggplot) to create a scatter plot with the regression line superimposed on the plot.  Again, this should be done for each state.
+```{r simple linear regression model, echo=TRUE}
+# Fitting Simple Linear Regression to the beerTX data
+regressorTX = lm(formula = ABV ~ IBU, data = beerTX)
+regressorTX
+
+#plot with the regression line superimposed on the Texas data
+plot(beerTX$IBU, beerTX$ABV, pch = 16, cex = 1.3, col = "blue", main = "ABV v IBU for Texas", xlab = "IBU", ylab = "ABV", abline(lm(beerTX$ABV ~ beerTX$IBU)))
+
+# Fitting Simple Linear Regression to the beerCO data
+regressorCO = lm(formula = ABV ~ IBU, data = beerCO)
+regressorCO
+
+#plot with the regression line superimposed on the Colorado data
+plot(beerCO$IBU, beerCO$ABV, pch = 16, cex = 1.3, col = "red", main = "ABV v IBU for Colorado", xlab = "IBU", ylab = "ABV", abline(lm(beerCO$ABV ~ beerCO$IBU)))
+
+```
+
+8.  Address the assumptions of the regression model. You may assume the data are independent (even if this is a stretch.):
+      
+      1. There is a normal distribution of the ABV for fixed values of IBU.
+      Looking at the graphs below we see the ABV data from Texas and Colorado are fariley normal. The QQ plot shows data that falls, for the most part, on the line.
+
+```{r checking normality in the ABV data, echo=TRUE}
+regressor = lm(formula = ABV ~ IBU, data = beerCOTX)
+
+ggdensity(beerCOTX$ABV, 
+          main = "Density plot of ABV from both Texas and Colorado",
+          xlab = "ABV")
+ggqqplot(beerCOTX$ABV)
+```
+      
+      2. These normal distributions have equal standard deviations.
+      The ABV data in the Scale-Location show a good spread of data with just a few outliers. The leverage is getting a bit high so some of the outliers may need to be addressed.
+      
+      3. The means of these normal distributions have a linear relationship with IBU.
+      The low p value and the coefficients both point to a linear relationship with IBU.
+      
+```{r checking for linear relationship with IBU, echo=TRUE}
+par(mfrow = c(2, 2))
+plot(regressor)
+summary(regressor)
+```
+      
+      4. Independence ( you may assume this one to be true without defense.)
+      We will be assuming independence in the data.
+      
+##D. Gain inference from the model
+
+9. Make sure and print the parameter estimate table. Interpret the slope of the regression model. You should have one sentence for each interpretation. In addition, answer the question: Is there evidence that the relationship between ABV and IBU is significantly different for Texas and Colorado beers?  For now, this is a judgement call.
+
+```{r parameter estimate table for Texas, echo=TRUE}
+coef(summary(regressorTX))
+```
+
+We can now tell from the data that in Texas if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.
+
+```{r parameter estimate table for Colorado, echo=TRUE}
+coef(summary(regressorCO))
+```
+
+We can now tell from the data that in Colorado if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.
+
+```{r parameter estimate table for both Colorado and Texas, echo=TRUE}
+coef(summary(regressor))
+```
+
+We can now tell from the combination of both Texas and Colorado data if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.
+
+```{r looking at all 3, echo=TRUE}
+tab_model(regressorTX, regressorCO, regressor)
+```
+
+The table above shows the break down from each set. Texas having 89 observations, Colorado having 146 and both with a combined total of 235. Showing each state has basicly the same relationship between ABV and IBU. 
+
+10.  Provide a confidence interval for each slope (from each state). Provide a sentence that interprets each slope (for each state) but this time include the confidence interval in your interpretation.  See the Unit 9 6371 slides for an example of how to write the interpretation of the confidence interval.  If you are not in 6371 and have not had it, ask a friend in the class to see the slides and discuss how to move forward.  In short, the confidence interval contains the plausible values of the parameter (the slope in this case) given the data you observed.  Given this new information, answer this question:  Is there significant evidence that he relationship between ABV and IBU is significantly different for Texas and Colorado beers? This question is less subjective now and has a clear answer based on the plausible values for the parameters.
+
+```{r confidence interval for Texas, echo=TRUE}
+confint(regressorTX)
+```
+
+For a beer in Texas with no IBU it is predicted that is will have an ABV of 0.043. A 95% confidence interval is (0.040 and 0.047).This has little practical meaning which is to be expected since it is extrapolation.
+We are 95% confident that, in the beers from Texas, when the IBU is increased by 1 unit the mean ABV increases between 0.00034 and 0.00049.
+
+```{r confidence interval for Colorado, echo=TRUE}
+confint(regressorCO)
+```
+
+For a beer in Colorado with no IBU it is predicted that is will have an ABV of 0.047. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation.
+We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.
+
+```{r confidence interval for both Texas and Colorado, echo=TRUE}
+confint(regressor)
+```
+
+Looking at beers form both states with no IBU it is predicted that is will have an ABV of 0.0456. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation.
+We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.
+
+Given this information, there evidence that he relationship between ABV and IBU is same for Texas and Colorado beers.
+
+##E. Compare two competing models: External Cross Validation
+
+11.  Using the beerCOTX dataframe, add a column to the data that is the square of the IBU column. Call it IBU2. Print the head of the dataframe with the new column.
+
+```{r}
+beerCOTX <- transform(beerCOTX, IBU2=IBU^2)
+head(beerCOTX)
+```
+
+12. For each state, create a training and test set from the data (60%/40% split respectively). Print a summary of each new data frame… there should be four: TrainingCO, TestCO, TrainingTX, TestTX.
+
+```{r spliting into Training and Test, echo=TRUE}
+# Splitting the Texas dataset into the Training set and Test set
+# install.packages('caTools')
+set.seed(123)
+split = sample.split(beerTX$ABV, SplitRatio = .6)
+TrainingTX = subset(beerTX, split == TRUE)
+TestTX = subset(beerTX, split == FALSE)
+#A summary of the TrainingTX data
+summary(TrainingTX)
+#A summary of the TestTX data
+summary(TestTX)
+
+# Splitting the Colorado dataset into the Training set and Test set
+# install.packages('caTools')
+set.seed(123)
+split = sample.split(beerCO$ABV, SplitRatio = .6)
+TrainingCO = subset(beerCO, split == TRUE)
+TestCO = subset(beerCO, split == FALSE)
+#A summary of the TrainingCO data
+summary(TrainingCO)
+#A summary of the TestCO data
+summary(TestCO)
+```
+
+13.  Brewmeisters are curious if the relationship between ABV and IBU is purely linear or if there is evidence of a quadratic component as well. To test this we would like to compare two models:
+
+Model 1:ABV= β_0+β_1 IBU
+
+Model 2:ABV= β_0+β_1 IBU+β_2 (IBU)^2
+
+Use the MSE loss function and external cross validation to provide evidence as to which model is more appropriate. Your analysis should include the average squared error (ASE) for the test set from Colorado and Texas. Your analysis should also include a clear discussion, using the MSEs, as to which model you feel is more appropriate.  
+
+ASE=(∑(y ̃_i-y_i )^2 )/n  
+
+Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the ith beer and n is the sample size.   
+BONUS: Is there another method that you know of that will provide inference as to the significance of the squared IBU term?  Please describe your thoughts and provide relevant statistics.  Does this inference agree with the result of your cross validation?  
+Reminder 
+To complete this assignment, please submit one RMarkdown and matching HTML file by the deadline. Please submit all files at the same time; only one submission is granted. 
+Good luck!
