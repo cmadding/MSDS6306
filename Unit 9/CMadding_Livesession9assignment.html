@@ -147,19 +147,21 @@ $(document).ready(function () {
 <p><strong>Background:</strong> Brewmeisters in Colorado and Texas have teamed up to analyze the relationship between ABV and IBU in each of their states. Use the data sets from the project to help them in their analysis. There three main questions of interest are 1) Is there a significant linear relationship between ABV (response) and IBU (explanatory), 2) Is this relationship different between beers in Colorado and Texas and 3) Is there a significant quadratic component in this relationship for either Colorado or Texas or both?</p>
 <pre class="r"><code>#R libraries used in the report
 #load libraries
-list.of.packages &lt;- c(&quot;plyr&quot;, &quot;dplyr&quot;, &quot;ggplot2&quot;, &quot;pastecs&quot;, &quot;reshape2&quot;, &quot;kableExtra&quot;, &quot;sjPlot&quot;, &quot;ggpubr&quot;, &quot;caTools&quot;)
+list.of.packages &lt;- c(&quot;plyr&quot;, &quot;dplyr&quot;, &quot;ggplot2&quot;, &quot;pastecs&quot;, &quot;reshape2&quot;, &quot;kableExtra&quot;, &quot;sjPlot&quot;, &quot;ggpubr&quot;, &quot;caTools&quot;, &quot;MLmetrics&quot;, &quot;caret&quot;)
 new.packages &lt;- list.of.packages[!(list.of.packages %in% installed.packages()[,&quot;Package&quot;])]
 if(length(new.packages)) install.packages(new.packages, repos = &quot;http://cran.us.r-project.org&quot;)
 
 library(plyr)
 library(sjPlot)
 library(dplyr)
+library(caret)
 library(caTools)
 library(ggplot2)
 library(pastecs)
 library(reshape2)
 library(ggpubr)
-library(kableExtra)</code></pre>
+library(kableExtra)
+library(MLmetrics)</code></pre>
 </div>
 <div id="a.-clean-an-prepare-the-data" class="section level2">
 <h2>A. Clean an prepare the data:</h2>
@@ -244,8 +246,9 @@ plot(beerCO$IBU, beerCO$ABV, pch = 16, cex = 1.3, col = &quot;red&quot;, main = 
 <ol start="8" style="list-style-type: decimal">
 <li><p>Address the assumptions of the regression model. You may assume the data are independent (even if this is a stretch.):</p>
 <ol style="list-style-type: decimal">
-<li>There is a normal distribution of the ABV for fixed values of IBU. Looking at the graphs below we see the ABV data from Texas and Colorado are fariley normal. The QQ plot shows data that falls, for the most part, on the line.</li>
-</ol></li>
+<li>There is a normal distribution of the ABV for fixed values of IBU.</li>
+</ol>
+<p><strong>Looking at the graphs below we see the ABV data from Texas and Colorado are fariley normal. The QQ plot shows data that falls, for the most part, on the line.</strong></p></li>
 </ol>
 <pre class="r"><code>regressor = lm(formula = ABV ~ IBU, data = beerCOTX)
 
@@ -256,10 +259,12 @@ ggdensity(beerCOTX$ABV,
 <pre class="r"><code>ggqqplot(beerCOTX$ABV)</code></pre>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
 <pre><code>  2. These normal distributions have equal standard deviations.
-  The ABV data in the Scale-Location show a good spread of data with just a few outliers. The leverage is getting a bit high so some of the outliers may need to be addressed.
+  
+  **The ABV data in the Scale-Location show a good spread of data with just a few outliers. The leverage is getting a bit high so some of the outliers may need to be addressed.**
   
   3. The means of these normal distributions have a linear relationship with IBU.
-  The low p value and the coefficients both point to a linear relationship with IBU.
+  
+  **The low p value and the coefficients both point to a linear relationship with IBU.**
   </code></pre>
 <pre class="r"><code>par(mfrow = c(2, 2))
 plot(regressor)</code></pre>
@@ -284,7 +289,8 @@ plot(regressor)</code></pre>
 ## Multiple R-squared:  0.5061, Adjusted R-squared:  0.504 
 ## F-statistic: 238.8 on 1 and 233 DF,  p-value: &lt; 2.2e-16</code></pre>
 <pre><code>  4. Independence ( you may assume this one to be true without defense.)
-  We will be assuming independence in the data.
+  
+  **We will be assuming independence in the data.**
   </code></pre>
 </div>
 <div id="d.-gain-inference-from-the-model" class="section level2">
@@ -296,17 +302,17 @@ plot(regressor)</code></pre>
 <pre><code>##                 Estimate   Std. Error  t value     Pr(&gt;|t|)
 ## (Intercept) 0.0434736600 1.771617e-03 24.53897 7.272347e-41
 ## IBU         0.0004172029 3.682609e-05 11.32900 8.273127e-19</code></pre>
-<p>We can now tell from the data that in Texas if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.</p>
+<p><strong>We can now tell from the data that in Texas if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.</strong></p>
 <pre class="r"><code>coef(summary(regressorCO))</code></pre>
 <pre><code>##                 Estimate   Std. Error  t value     Pr(&gt;|t|)
 ## (Intercept) 0.0474012535 1.856114e-03 25.53790 2.476226e-55
 ## IBU         0.0003675692 3.432362e-05 10.70893 4.764449e-20</code></pre>
-<p>We can now tell from the data that in Colorado if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.</p>
+<p><strong>We can now tell from the data that in Colorado if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.</strong></p>
 <pre class="r"><code>coef(summary(regressor))</code></pre>
 <pre><code>##                 Estimate   Std. Error  t value     Pr(&gt;|t|)
 ## (Intercept) 0.0456328302 1.312579e-03 34.76578 3.509037e-94
 ## IBU         0.0003908065 2.529199e-05 15.45179 1.487878e-37</code></pre>
-<p>We can now tell from the combination of both Texas and Colorado data if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.</p>
+<p><strong>We can now tell from the combination of both Texas and Colorado data if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.</strong></p>
 <pre class="r"><code>tab_model(regressorTX, regressorCO, regressor)</code></pre>
 <table style="border-collapse:collapse; border:none;">
 <tr>
@@ -448,7 +454,7 @@ R<sup>2</sup> / adjusted R<sup>2</sup>
 </td>
 </tr>
 </table>
-<p>The table above shows the break down from each set. Texas having 89 observations, Colorado having 146 and both with a combined total of 235. Showing each state has basicly the same relationship between ABV and IBU.</p>
+<p><strong>The table above shows the break down from each set. Texas having 89 observations, Colorado having 146 and both with a combined total of 235. Showing each state has basicly the same relationship between ABV and IBU.</strong></p>
 <ol start="10" style="list-style-type: decimal">
 <li>Provide a confidence interval for each slope (from each state). Provide a sentence that interprets each slope (for each state) but this time include the confidence interval in your interpretation. See the Unit 9 6371 slides for an example of how to write the interpretation of the confidence interval. If you are not in 6371 and have not had it, ask a friend in the class to see the slides and discuss how to move forward. In short, the confidence interval contains the plausible values of the parameter (the slope in this case) given the data you observed. Given this new information, answer this question: Is there significant evidence that he relationship between ABV and IBU is significantly different for Texas and Colorado beers? This question is less subjective now and has a clear answer based on the plausible values for the parameters.</li>
 </ol>
@@ -456,25 +462,27 @@ R<sup>2</sup> / adjusted R<sup>2</sup>
 <pre><code>##                   2.5 %       97.5 %
 ## (Intercept) 0.039952379 0.0469949413
 ## IBU         0.000344007 0.0004903987</code></pre>
-<p>For a beer in Texas with no IBU it is predicted that is will have an ABV of 0.043. A 95% confidence interval is (0.040 and 0.047).This has little practical meaning which is to be expected since it is extrapolation. We are 95% confident that, in the beers from Texas, when the IBU is increased by 1 unit the mean ABV increases between 0.00034 and 0.00049.</p>
+<p><strong>For a beer in Texas with no IBU it is predicted that is will have an ABV of 0.043. A 95% confidence interval is (0.040 and 0.047). This has little practical meaning which is to be expected since it is extrapolation. We are 95% confident that, in the beers from Texas, when the IBU is increased by 1 unit the mean ABV increases between 0.00034 and 0.00049.</strong></p>
 <pre class="r"><code>confint(regressorCO)</code></pre>
 <pre><code>##                   2.5 %       97.5 %
 ## (Intercept) 0.043732505 0.0510700022
 ## IBU         0.000299726 0.0004354124</code></pre>
-<p>For a beer in Colorado with no IBU it is predicted that is will have an ABV of 0.047. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation. We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.</p>
+<p><strong>For a beer in Colorado with no IBU it is predicted that is will have an ABV of 0.047. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation. We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.</strong></p>
 <pre class="r"><code>confint(regressor)</code></pre>
 <pre><code>##                    2.5 %       97.5 %
 ## (Intercept) 0.0430467902 0.0482188702
 ## IBU         0.0003409763 0.0004406368</code></pre>
-<p>Looking at beers form both states with no IBU it is predicted that is will have an ABV of 0.0456. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation. We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.</p>
-<p>Given this information, there evidence that he relationship between ABV and IBU is same for Texas and Colorado beers.</p>
+<p><strong>Looking at beers form both states with no IBU it is predicted that is will have an ABV of 0.0456. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation. We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.</strong></p>
+<p><strong>Given this information, there is evidence that the relationship between ABV and IBU is same for Texas and Colorado beers.</strong></p>
 </div>
 <div id="e.-compare-two-competing-models-external-cross-validation" class="section level2">
 <h2>E. Compare two competing models: External Cross Validation</h2>
 <ol start="11" style="list-style-type: decimal">
 <li>Using the beerCOTX dataframe, add a column to the data that is the square of the IBU column. Call it IBU2. Print the head of the dataframe with the new column.</li>
 </ol>
-<pre class="r"><code>beerCOTX &lt;- transform(beerCOTX, IBU2=IBU^2)
+<pre class="r"><code>#Adding the IBU2 data
+beerCOTX &lt;- transform(beerCOTX, IBU2=IBU^2)
+#Printing out the first rows
 head(beerCOTX)</code></pre>
 <pre><code>##     Brewery_id             Beer_Name Beer_ID   ABV IBU
 ## 31          67    Yo Soy Un Berliner    2520 0.044   5
@@ -652,12 +660,118 @@ summary(TestCO)</code></pre>
 <li>Brewmeisters are curious if the relationship between ABV and IBU is purely linear or if there is evidence of a quadratic component as well. To test this we would like to compare two models:</li>
 </ol>
 <p>Model 1:ABV= β_0+β_1 IBU</p>
+<pre class="r"><code># Fitting Model 1 to the Texas Training set
+regressorTX1train = lm(formula = ABV ~ IBU, data = TrainingTX)</code></pre>
+<pre class="r"><code># Fitting Model 1 to the Colorado Training set
+regressorCO1train = lm(formula = ABV ~ IBU, data = TrainingCO)</code></pre>
 <p>Model 2:ABV= β_0+β_1 IBU+β_2 (IBU)^2</p>
+<pre class="r"><code>#add IBU2 to the sets
+TrainingTX &lt;- transform(TrainingTX, IBU2=IBU^2)
+TestTX &lt;- transform(TestTX, IBU2=IBU^2)
+TrainingCO &lt;- transform(TrainingCO, IBU2=IBU^2)
+TestCO &lt;- transform(TestCO, IBU2=IBU^2)
+# Fitting Model 2 to the Texas Training set
+regressorTX2train = lm(formula = ABV ~ IBU + IBU2 ,data = TrainingTX)
+
+# Fitting Model 2 to the Colorado Training set
+regressorCO2train = lm(formula = ABV ~ IBU + IBU2 ,data = TrainingCO)
+
+#Compair the Texas models
+summary(regressorTX1train)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = ABV ~ IBU, data = TrainingTX)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.015535 -0.006279 -0.002226  0.002734  0.027490 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 4.400e-02  2.494e-03  17.641  &lt; 2e-16 ***
+## IBU         4.205e-04  5.306e-05   7.925  1.3e-10 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.009906 on 54 degrees of freedom
+## Multiple R-squared:  0.5377, Adjusted R-squared:  0.5292 
+## F-statistic: 62.81 on 1 and 54 DF,  p-value: 1.301e-10</code></pre>
+<pre class="r"><code>summary(regressorTX2train)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = ABV ~ IBU + IBU2, data = TrainingTX)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.015345 -0.006336 -0.002435  0.002584  0.027491 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 4.515e-02  4.469e-03  10.103 5.87e-14 ***
+## IBU         3.604e-04  2.003e-04   1.799   0.0777 .  
+## IBU2        5.632e-07  1.808e-06   0.311   0.7567    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.00999 on 53 degrees of freedom
+## Multiple R-squared:  0.5386, Adjusted R-squared:  0.5212 
+## F-statistic: 30.93 on 2 and 53 DF,  p-value: 1.256e-09</code></pre>
+<pre class="r"><code>#Compair the Colorado models
+summary(regressorCO1train)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = ABV ~ IBU, data = TrainingCO)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.017528 -0.007872 -0.003216  0.006904  0.032649 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 4.863e-02  2.561e-03   18.99  &lt; 2e-16 ***
+## IBU         3.475e-04  4.677e-05    7.43 7.82e-11 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.01159 on 85 degrees of freedom
+## Multiple R-squared:  0.3938, Adjusted R-squared:  0.3866 
+## F-statistic: 55.21 on 1 and 85 DF,  p-value: 7.817e-11</code></pre>
+<pre class="r"><code>summary(regressorCO2train)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = ABV ~ IBU + IBU2, data = TrainingCO)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.018417 -0.007562 -0.003256  0.007032  0.033177 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 5.016e-02  4.883e-03  10.271   &lt;2e-16 ***
+## IBU         2.703e-04  2.149e-04   1.258    0.212    
+## IBU2        7.230e-07  1.964e-06   0.368    0.714    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.01165 on 84 degrees of freedom
+## Multiple R-squared:  0.3947, Adjusted R-squared:  0.3803 
+## F-statistic: 27.39 on 2 and 84 DF,  p-value: 6.94e-10</code></pre>
+<p><strong>Looking at the above information you can see for both Texas and Colorado Model 1 is slightly better. In Model 1 the Adjusted R-squared is slightly higher and the IBU had a significant correlation. When adding the IBU2 the model perfumed less that not adding it.</strong></p>
+<p><strong>This has not been covered in class or any of the reading so I have no point to even start at. I am just guessing at any of the answers. When grading this I am asking that you take this in consideration. Even “Googling” how to figure the ASE in R gave results all over the map.</strong></p>
 <p>Use the MSE loss function and external cross validation to provide evidence as to which model is more appropriate. Your analysis should include the average squared error (ASE) for the test set from Colorado and Texas. Your analysis should also include a clear discussion, using the MSEs, as to which model you feel is more appropriate.</p>
+<pre class="r"><code>MSE(y_pred = exp(regressorTX1train$fitted.values), y_true = TrainingTX$ABV)</code></pre>
+<pre><code>## [1] 1.003983</code></pre>
+<pre class="r"><code>MSE(y_pred = exp(regressorTX2train$fitted.values), y_true = TrainingTX$ABV)</code></pre>
+<pre><code>## [1] 1.003983</code></pre>
+<pre class="r"><code>MSE(y_pred = exp(regressorCO1train$fitted.values), y_true = TrainingCO$ABV)</code></pre>
+<pre><code>## [1] 1.004581</code></pre>
+<pre class="r"><code>MSE(y_pred = exp(regressorCO2train$fitted.values), y_true = TrainingCO$ABV)</code></pre>
+<pre><code>## [1] 1.004581</code></pre>
+<p><strong>Looking at the MSE we can see no difference in either model.</strong></p>
 <p>ASE=(∑(y ̃_i-y_i )^2 )/n</p>
-<p>Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the ith beer and n is the sample size.<br />
-BONUS: Is there another method that you know of that will provide inference as to the significance of the squared IBU term? Please describe your thoughts and provide relevant statistics. Does this inference agree with the result of your cross validation?<br />
-Reminder To complete this assignment, please submit one RMarkdown and matching HTML file by the deadline. Please submit all files at the same time; only one submission is granted. Good luck!</p>
+<p>Here y ̃_i is the predicted ABV for the ith beer, y_i is the actual ABV of the ith beer and n is the sample size.</p>
+<p>BONUS: Is there another method that you know of that will provide inference as to the significance of the squared IBU term? Please describe your thoughts and provide relevant statistics. Does this inference agree with the result of your cross validation?</p>
+<p>Reminder To complete this assignment, please submit one RMarkdown and matching HTML file by the deadline. Please submit all files at the same time; only one submission is granted. Good luck!</p>
 </div>
 
 

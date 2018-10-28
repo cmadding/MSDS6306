@@ -28,19 +28,21 @@ ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMEN
 ```r
 #R libraries used in the report
 #load libraries
-list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools")
+list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools", "MLmetrics", "caret")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
 
 library(plyr)
 library(sjPlot)
 library(dplyr)
+library(caret)
 library(caTools)
 library(ggplot2)
 library(pastecs)
 library(reshape2)
 library(ggpubr)
 library(kableExtra)
+library(MLmetrics)
 ```
 
 ##A. Clean an prepare the data:
@@ -167,7 +169,8 @@ plot(beerCO$IBU, beerCO$ABV, pch = 16, cex = 1.3, col = "red", main = "ABV v IBU
 8.  Address the assumptions of the regression model. You may assume the data are independent (even if this is a stretch.):
       
       1. There is a normal distribution of the ABV for fixed values of IBU.
-      Looking at the graphs below we see the ABV data from Texas and Colorado are fariley normal. The QQ plot shows data that falls, for the most part, on the line.
+      
+      **Looking at the graphs below we see the ABV data from Texas and Colorado are fariley normal. The QQ plot shows data that falls, for the most part, on the line.**
 
 
 ```r
@@ -187,10 +190,12 @@ ggqqplot(beerCOTX$ABV)
 ![](CMadding_Livesession9assignment_files/figure-html/checking normality in the ABV data-2.png)<!-- -->
       
       2. These normal distributions have equal standard deviations.
-      The ABV data in the Scale-Location show a good spread of data with just a few outliers. The leverage is getting a bit high so some of the outliers may need to be addressed.
+      
+      **The ABV data in the Scale-Location show a good spread of data with just a few outliers. The leverage is getting a bit high so some of the outliers may need to be addressed.**
       
       3. The means of these normal distributions have a linear relationship with IBU.
-      The low p value and the coefficients both point to a linear relationship with IBU.
+      
+      **The low p value and the coefficients both point to a linear relationship with IBU.**
       
 
 ```r
@@ -226,7 +231,8 @@ summary(regressor)
 ```
       
       4. Independence ( you may assume this one to be true without defense.)
-      We will be assuming independence in the data.
+      
+      **We will be assuming independence in the data.**
       
 ##D. Gain inference from the model
 
@@ -243,7 +249,7 @@ coef(summary(regressorTX))
 ## IBU         0.0004172029 3.682609e-05 11.32900 8.273127e-19
 ```
 
-We can now tell from the data that in Texas if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.
+**We can now tell from the data that in Texas if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.**
 
 
 ```r
@@ -256,7 +262,7 @@ coef(summary(regressorCO))
 ## IBU         0.0003675692 3.432362e-05 10.70893 4.764449e-20
 ```
 
-We can now tell from the data that in Colorado if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.
+**We can now tell from the data that in Colorado if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls, on average, by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.**
 
 
 ```r
@@ -269,7 +275,7 @@ coef(summary(regressor))
 ## IBU         0.0003908065 2.529199e-05 15.45179 1.487878e-37
 ```
 
-We can now tell from the combination of both Texas and Colorado data if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.
+**We can now tell from the combination of both Texas and Colorado data if you move left or right along the x-axis by an amount that represents one unit change in IBU, the ABU rises or falls by 0.0004. However, these measurements are from one observational study. The relationship is only valid within this data range.**
 
 
 ```r
@@ -334,7 +340,8 @@ tab_model(regressorTX, regressorCO, regressor)
 
 </table>
 
-The table above shows the break down from each set. Texas having 89 observations, Colorado having 146 and both with a combined total of 235. Showing each state has basicly the same relationship between ABV and IBU. 
+
+**The table above shows the break down from each set. Texas having 89 observations, Colorado having 146 and both with a combined total of 235. Showing each state has basicly the same relationship between ABV and IBU.**
 
 10.  Provide a confidence interval for each slope (from each state). Provide a sentence that interprets each slope (for each state) but this time include the confidence interval in your interpretation.  See the Unit 9 6371 slides for an example of how to write the interpretation of the confidence interval.  If you are not in 6371 and have not had it, ask a friend in the class to see the slides and discuss how to move forward.  In short, the confidence interval contains the plausible values of the parameter (the slope in this case) given the data you observed.  Given this new information, answer this question:  Is there significant evidence that he relationship between ABV and IBU is significantly different for Texas and Colorado beers? This question is less subjective now and has a clear answer based on the plausible values for the parameters.
 
@@ -349,8 +356,8 @@ confint(regressorTX)
 ## IBU         0.000344007 0.0004903987
 ```
 
-For a beer in Texas with no IBU it is predicted that is will have an ABV of 0.043. A 95% confidence interval is (0.040 and 0.047).This has little practical meaning which is to be expected since it is extrapolation.
-We are 95% confident that, in the beers from Texas, when the IBU is increased by 1 unit the mean ABV increases between 0.00034 and 0.00049.
+**For a beer in Texas with no IBU it is predicted that is will have an ABV of 0.043. A 95% confidence interval is (0.040 and 0.047). This has little practical meaning which is to be expected since it is extrapolation.
+We are 95% confident that, in the beers from Texas, when the IBU is increased by 1 unit the mean ABV increases between 0.00034 and 0.00049.**
 
 
 ```r
@@ -363,8 +370,8 @@ confint(regressorCO)
 ## IBU         0.000299726 0.0004354124
 ```
 
-For a beer in Colorado with no IBU it is predicted that is will have an ABV of 0.047. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation.
-We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.
+**For a beer in Colorado with no IBU it is predicted that is will have an ABV of 0.047. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation.
+We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.**
 
 
 ```r
@@ -377,10 +384,10 @@ confint(regressor)
 ## IBU         0.0003409763 0.0004406368
 ```
 
-Looking at beers form both states with no IBU it is predicted that is will have an ABV of 0.0456. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation.
-We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.
+**Looking at beers form both states with no IBU it is predicted that is will have an ABV of 0.0456. A 95% confidence interval is (0.043 and 0.051).This has little practical meaning which is to be expected since it is extrapolation.
+We are 95% confident that, in the beers from Colorado, when the IBU is increased by 1 unit the mean ABV increases between 0.0003 and 0.0004.**
 
-Given this information, there evidence that he relationship between ABV and IBU is same for Texas and Colorado beers.
+**Given this information, there is evidence that the relationship between ABV and IBU is same for Texas and Colorado beers.**
 
 ##E. Compare two competing models: External Cross Validation
 
@@ -388,7 +395,9 @@ Given this information, there evidence that he relationship between ABV and IBU 
 
 
 ```r
+#Adding the IBU2 data
 beerCOTX <- transform(beerCOTX, IBU2=IBU^2)
+#Printing out the first rows
 head(beerCOTX)
 ```
 
@@ -465,6 +474,7 @@ summary(TrainingTX)
 ## 
 ```
 
+
 ```r
 #A summary of the TestTX data
 summary(TestTX)
@@ -504,6 +514,7 @@ summary(TestTX)
 ##                    
 ## 
 ```
+
 
 ```r
 # Splitting the Colorado dataset into the Training set and Test set
@@ -551,6 +562,7 @@ summary(TrainingCO)
 ## 
 ```
 
+
 ```r
 #A summary of the TestCO data
 summary(TestCO)
@@ -591,18 +603,190 @@ summary(TestCO)
 ## 
 ```
 
-13.  Brewmeisters are curious if the relationship between ABV and IBU is purely linear or if there is evidence of a quadratic component as well. To test this we would like to compare two models:
+13. Brewmeisters are curious if the relationship between ABV and IBU is purely linear or if there is evidence of a quadratic component as well. To test this we would like to compare two models:
 
 Model 1:ABV= β_0+β_1 IBU
 
+
+```r
+# Fitting Model 1 to the Texas Training set
+regressorTX1train = lm(formula = ABV ~ IBU, data = TrainingTX)
+```
+
+
+```r
+# Fitting Model 1 to the Colorado Training set
+regressorCO1train = lm(formula = ABV ~ IBU, data = TrainingCO)
+```
+
 Model 2:ABV= β_0+β_1 IBU+β_2 (IBU)^2
 
-Use the MSE loss function and external cross validation to provide evidence as to which model is more appropriate. Your analysis should include the average squared error (ASE) for the test set from Colorado and Texas. Your analysis should also include a clear discussion, using the MSEs, as to which model you feel is more appropriate.  
 
-ASE=(∑(y ̃_i-y_i )^2 )/n  
+```r
+#add IBU2 to the sets
+TrainingTX <- transform(TrainingTX, IBU2=IBU^2)
+TestTX <- transform(TestTX, IBU2=IBU^2)
+TrainingCO <- transform(TrainingCO, IBU2=IBU^2)
+TestCO <- transform(TestCO, IBU2=IBU^2)
+# Fitting Model 2 to the Texas Training set
+regressorTX2train = lm(formula = ABV ~ IBU + IBU2 ,data = TrainingTX)
 
-Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the ith beer and n is the sample size.   
-BONUS: Is there another method that you know of that will provide inference as to the significance of the squared IBU term?  Please describe your thoughts and provide relevant statistics.  Does this inference agree with the result of your cross validation?  
+# Fitting Model 2 to the Colorado Training set
+regressorCO2train = lm(formula = ABV ~ IBU + IBU2 ,data = TrainingCO)
+
+#Compair the Texas models
+summary(regressorTX1train)
+```
+
+```
+## 
+## Call:
+## lm(formula = ABV ~ IBU, data = TrainingTX)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.015535 -0.006279 -0.002226  0.002734  0.027490 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 4.400e-02  2.494e-03  17.641  < 2e-16 ***
+## IBU         4.205e-04  5.306e-05   7.925  1.3e-10 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.009906 on 54 degrees of freedom
+## Multiple R-squared:  0.5377,	Adjusted R-squared:  0.5292 
+## F-statistic: 62.81 on 1 and 54 DF,  p-value: 1.301e-10
+```
+
+```r
+summary(regressorTX2train)
+```
+
+```
+## 
+## Call:
+## lm(formula = ABV ~ IBU + IBU2, data = TrainingTX)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.015345 -0.006336 -0.002435  0.002584  0.027491 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 4.515e-02  4.469e-03  10.103 5.87e-14 ***
+## IBU         3.604e-04  2.003e-04   1.799   0.0777 .  
+## IBU2        5.632e-07  1.808e-06   0.311   0.7567    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.00999 on 53 degrees of freedom
+## Multiple R-squared:  0.5386,	Adjusted R-squared:  0.5212 
+## F-statistic: 30.93 on 2 and 53 DF,  p-value: 1.256e-09
+```
+
+
+```r
+#Compair the Colorado models
+summary(regressorCO1train)
+```
+
+```
+## 
+## Call:
+## lm(formula = ABV ~ IBU, data = TrainingCO)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.017528 -0.007872 -0.003216  0.006904  0.032649 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 4.863e-02  2.561e-03   18.99  < 2e-16 ***
+## IBU         3.475e-04  4.677e-05    7.43 7.82e-11 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.01159 on 85 degrees of freedom
+## Multiple R-squared:  0.3938,	Adjusted R-squared:  0.3866 
+## F-statistic: 55.21 on 1 and 85 DF,  p-value: 7.817e-11
+```
+
+```r
+summary(regressorCO2train)
+```
+
+```
+## 
+## Call:
+## lm(formula = ABV ~ IBU + IBU2, data = TrainingCO)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.018417 -0.007562 -0.003256  0.007032  0.033177 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 5.016e-02  4.883e-03  10.271   <2e-16 ***
+## IBU         2.703e-04  2.149e-04   1.258    0.212    
+## IBU2        7.230e-07  1.964e-06   0.368    0.714    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.01165 on 84 degrees of freedom
+## Multiple R-squared:  0.3947,	Adjusted R-squared:  0.3803 
+## F-statistic: 27.39 on 2 and 84 DF,  p-value: 6.94e-10
+```
+**Looking at the above information you can see for both Texas and Colorado Model 1 is slightly better. In Model 1 the Adjusted R-squared is slightly higher and the IBU had a significant correlation. When adding the IBU2 the model perfumed less that not adding it.**
+
+**This has not been covered in class or any of the reading so I have no point to even start at. I am just guessing at any of the answers. When grading this I am asking that you take this in consideration. Even "Googling" how to figure the ASE in R gave results all over the map.**
+
+Use the MSE loss function and external cross validation to provide evidence as to which model is more appropriate. Your analysis should include the average squared error (ASE) for the test set from Colorado and Texas. Your analysis should also include a clear discussion, using the MSEs, as to which model you feel is more appropriate.
+
+
+```r
+MSE(y_pred = exp(regressorTX1train$fitted.values), y_true = TrainingTX$ABV)
+```
+
+```
+## [1] 1.003983
+```
+
+```r
+MSE(y_pred = exp(regressorTX2train$fitted.values), y_true = TrainingTX$ABV)
+```
+
+```
+## [1] 1.003983
+```
+
+```r
+MSE(y_pred = exp(regressorCO1train$fitted.values), y_true = TrainingCO$ABV)
+```
+
+```
+## [1] 1.004581
+```
+
+```r
+MSE(y_pred = exp(regressorCO2train$fitted.values), y_true = TrainingCO$ABV)
+```
+
+```
+## [1] 1.004581
+```
+**Looking at the MSE we can see no difference in either model.**
+
+
+ASE=(∑(y ̃_i-y_i )^2 )/n
+
+
+Here y ̃_i is the predicted ABV for the ith beer, y_i is the actual ABV of the ith beer and n is the sample size.
+
+
+BONUS: Is there another method that you know of that will provide inference as to the significance of the squared IBU term? Please describe your thoughts and provide relevant statistics. Does this inference agree with the result of your cross validation?
+
+
 Reminder 
 To complete this assignment, please submit one RMarkdown and matching HTML file by the deadline. Please submit all files at the same time; only one submission is granted. 
 Good luck!
