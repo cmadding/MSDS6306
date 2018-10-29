@@ -29,7 +29,7 @@ ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMEN
 ```{r librariesAndHelpers, message=FALSE}
 #R libraries used in the report
 #load libraries
-list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools", "MLmetrics", "caret")
+list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools", "MLmetrics", "caret", "mnormt")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
 
@@ -44,6 +44,7 @@ library(reshape2)
 library(ggpubr)
 library(kableExtra)
 library(MLmetrics)
+library(mnormt)
 ```
 
 ##A. Clean an prepare the data:
@@ -280,10 +281,10 @@ TestTX <- transform(TestTX, IBU2=IBU^2)
 TrainingCO <- transform(TrainingCO, IBU2=IBU^2)
 TestCO <- transform(TestCO, IBU2=IBU^2)
 # Fitting Model 2 to the Texas Training set
-regressorTX2train = lm(formula = ABV ~ IBU + IBU2 ,data = TrainingTX)
+regressorTX2train = lm(ABV ~ poly(IBU, 2) ,data = TrainingTX)
 
 # Fitting Model 2 to the Colorado Training set
-regressorCO2train = lm(formula = ABV ~ IBU + IBU2 ,data = TrainingCO)
+regressorCO2train = lm(ABV ~ poly(IBU, 2) ,data = TrainingCO)
 
 #Compair the Texas models
 summary(regressorTX1train)
@@ -295,7 +296,7 @@ summary(regressorTX2train)
 summary(regressorCO1train)
 summary(regressorCO2train)
 ```
-**Looking at the above information you can see for both Texas and Colorado Model 1 is slightly better. In Model 1 the Adjusted R-squared is slightly higher and the IBU had a significant correlation. When adding the IBU2 the model perfumed less that not adding it.**
+**Looking at the above information you can see for both Texas and Colorado Model 1 is slightly better. In Model 1 the Adjusted R-squared is slightly higher and the IBU had a significant correlation. When adding the IBU2 the model performed less than not adding it.**
 
 **This has not been covered in class or any of the reading so I have no point to even start at. I am just guessing at any of the answers. When grading this I am asking that you take this in consideration. Even "Googling" how to figure the ASE in R gave results all over the map.**
 

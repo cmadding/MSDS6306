@@ -28,7 +28,7 @@ ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMEN
 ```r
 #R libraries used in the report
 #load libraries
-list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools", "MLmetrics", "caret")
+list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools", "MLmetrics", "caret", "mnormt")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
 
@@ -43,6 +43,7 @@ library(reshape2)
 library(ggpubr)
 library(kableExtra)
 library(MLmetrics)
+library(mnormt)
 ```
 
 ##A. Clean an prepare the data:
@@ -629,10 +630,10 @@ TestTX <- transform(TestTX, IBU2=IBU^2)
 TrainingCO <- transform(TrainingCO, IBU2=IBU^2)
 TestCO <- transform(TestCO, IBU2=IBU^2)
 # Fitting Model 2 to the Texas Training set
-regressorTX2train = lm(formula = ABV ~ IBU + IBU2 ,data = TrainingTX)
+regressorTX2train = lm(ABV ~ poly(IBU, 2) ,data = TrainingTX)
 
 # Fitting Model 2 to the Colorado Training set
-regressorCO2train = lm(formula = ABV ~ IBU + IBU2 ,data = TrainingCO)
+regressorCO2train = lm(ABV ~ poly(IBU, 2) ,data = TrainingCO)
 
 #Compair the Texas models
 summary(regressorTX1train)
@@ -666,17 +667,17 @@ summary(regressorTX2train)
 ```
 ## 
 ## Call:
-## lm(formula = ABV ~ IBU + IBU2, data = TrainingTX)
+## lm(formula = ABV ~ poly(IBU, 2), data = TrainingTX)
 ## 
 ## Residuals:
 ##       Min        1Q    Median        3Q       Max 
 ## -0.015345 -0.006336 -0.002435  0.002584  0.027491 
 ## 
 ## Coefficients:
-##              Estimate Std. Error t value Pr(>|t|)    
-## (Intercept) 4.515e-02  4.469e-03  10.103 5.87e-14 ***
-## IBU         3.604e-04  2.003e-04   1.799   0.0777 .  
-## IBU2        5.632e-07  1.808e-06   0.311   0.7567    
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   0.060750   0.001335  45.508  < 2e-16 ***
+## poly(IBU, 2)1 0.078509   0.009990   7.859 1.88e-10 ***
+## poly(IBU, 2)2 0.003111   0.009990   0.311    0.757    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -719,17 +720,17 @@ summary(regressorCO2train)
 ```
 ## 
 ## Call:
-## lm(formula = ABV ~ IBU + IBU2, data = TrainingCO)
+## lm(formula = ABV ~ poly(IBU, 2), data = TrainingCO)
 ## 
 ## Residuals:
 ##       Min        1Q    Median        3Q       Max 
 ## -0.018417 -0.007562 -0.003256  0.007032  0.033177 
 ## 
 ## Coefficients:
-##              Estimate Std. Error t value Pr(>|t|)    
-## (Intercept) 5.016e-02  4.883e-03  10.271   <2e-16 ***
-## IBU         2.703e-04  2.149e-04   1.258    0.212    
-## IBU2        7.230e-07  1.964e-06   0.368    0.714    
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   0.065264   0.001249  52.257  < 2e-16 ***
+## poly(IBU, 2)1 0.086115   0.011649   7.393 9.83e-11 ***
+## poly(IBU, 2)2 0.004288   0.011649   0.368    0.714    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -737,7 +738,7 @@ summary(regressorCO2train)
 ## Multiple R-squared:  0.3947,	Adjusted R-squared:  0.3803 
 ## F-statistic: 27.39 on 2 and 84 DF,  p-value: 6.94e-10
 ```
-**Looking at the above information you can see for both Texas and Colorado Model 1 is slightly better. In Model 1 the Adjusted R-squared is slightly higher and the IBU had a significant correlation. When adding the IBU2 the model perfumed less that not adding it.**
+**Looking at the above information you can see for both Texas and Colorado Model 1 is slightly better. In Model 1 the Adjusted R-squared is slightly higher and the IBU had a significant correlation. When adding the IBU2 the model performed less than not adding it.**
 
 **This has not been covered in class or any of the reading so I have no point to even start at. I am just guessing at any of the answers. When grading this I am asking that you take this in consideration. Even "Googling" how to figure the ASE in R gave results all over the map.**
 
