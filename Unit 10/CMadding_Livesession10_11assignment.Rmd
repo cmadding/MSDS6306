@@ -45,6 +45,9 @@ library(ggpubr)
 library(kableExtra)
 library(MLmetrics)
 library(mnormt)
+library(mlr)
+library(FNN)
+library(magrittr)
 ```
 
 ### I. KNN Regression versus Linear Regression
@@ -112,7 +115,22 @@ summary(TrainingTX)
 summary(TestTX)
 ```
 
-    9. Using the training dat, fit a KNN regression model to predict ABV from IBU.  You should use the knnreg function in the caret package.  Fit two separate models: one with k = 3 and one with k = 5.  (This is 2 models total.)
+    9. Using the training data, fit a KNN regression model to predict ABV from IBU.  You should use the knnreg function in the caret package. Fit two separate models: one with k = 3 and one with k = 5. (This is 2 models total.)
+    
+```{r}
+#fit a KNN regression model to predict ABV from IBU, k = 3
+Train3TX.knn<- knn.reg(TrainingTX$IBU, test = NULL, y=TrainingTX$ABV, k=3)
+plot(TrainingTX$IBU, Train3TX.knn$pred, xlab="IBU", ylab="Predicted ABV", main = "KNN K=3")
+#print fit a KNN regression model to predict ABV from IBU, k = 3
+Train3TX.knn
+#fit a KNN regression model to predict ABV from IBU, k = 5
+Train5TX.knn<- knn.reg(TrainingTX$IBU, test = NULL, y=TrainingTX$ABV, k=5)
+plot(TrainingTX$IBU, Train5TX.knn$pred, xlab="IBU", ylab="Predicted ABV", main = "KNN K=5")
+#Print fit a KNN regression model to predict ABV from IBU, k = 5
+Train5TX.knn
+
+```
+    
    
     10. Use the ASE loss function and external cross validation to provide evidence as to which model (k = 3 or k = 5) is more appropriate.  Remember your answer should be supported with why you feel a certain model is appropriate.  Your analysis should include the average squared error (ASE) for each model from the test set.  Your analysis should also include a clear discussion, using the ASEs, as to which model you feel is more appropriate.
     
@@ -123,7 +141,6 @@ Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the i
     11. Now use the ASE loss function and external cross validation to provide evidence as to which model (the linear regression model from last week or the “best” KNN regression model from this week (from question 10)) is more appropriate.
    
     12. Use your “best” KNN regression model to predict the ABV for an IBU of 150, 170 and 190.  What issue do you see with using KNN to extrapolate?
-    
     
 ### II. KNN Classification
 
