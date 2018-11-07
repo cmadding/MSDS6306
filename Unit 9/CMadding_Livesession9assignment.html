@@ -926,6 +926,22 @@ summary(regressorCO1train)</code></pre>
 <p><strong>Looking at the above information you can see for both Texas and Colorado Model 1 is slightly better. In Model 1 the Adjusted R-squared is slightly higher and the IBU had a significant correlation. When adding the IBU2 the model performed less than not adding it.</strong></p>
 <p><strong>This has not been covered in class or any of the reading so I have no point to even start at. I am just guessing at any of the answers. When grading this I am asking that you take this in consideration. Even “Googling” how to figure the ASE in R gave results all over the map.</strong></p>
 <p>Use the MSE loss function and external cross validation to provide evidence as to which model is more appropriate. Your analysis should include the average squared error (ASE) for the test set from Colorado and Texas. Your analysis should also include a clear discussion, using the MSEs, as to which model you feel is more appropriate.</p>
+<pre class="r"><code>#TX1 Residual sum of squares:
+TX1trainRSS &lt;- c(crossprod(regressorTX1train$residuals))
+#TX1 Mean squared error:
+TX1trainMSE &lt;- TX1trainRSS / length(regressorTX1train$residuals)
+#TX1 Root MSE:
+TX1trainRMSE &lt;- sqrt(TX1trainMSE)
+TX1trainRMSE</code></pre>
+<pre><code>## [1] 0.009727404</code></pre>
+<pre class="r"><code>#TX2 Residual sum of squares:
+TX2trainRSS &lt;- c(crossprod(regressorTX2train$residuals))
+#TX2 Mean squared error:
+TX2trainMSE &lt;- TX2trainRSS / length(regressorTX2train$residuals)
+#TX2 Root MSE:
+TX2trainRMSE &lt;- sqrt(TX2trainMSE)
+TX2trainRMSE</code></pre>
+<pre><code>## [1] 0.009718517</code></pre>
 <pre class="r"><code>MSE(y_pred = exp(regressorTX1train$fitted.values), y_true = TrainingTX$ABV)</code></pre>
 <pre><code>## [1] 1.003983</code></pre>
 <pre class="r"><code>MSE(y_pred = exp(regressorTX2train$fitted.values), y_true = TrainingTX$ABV)</code></pre>

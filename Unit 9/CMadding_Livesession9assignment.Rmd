@@ -303,6 +303,23 @@ summary(regressorCO2train)
 Use the MSE loss function and external cross validation to provide evidence as to which model is more appropriate. Your analysis should include the average squared error (ASE) for the test set from Colorado and Texas. Your analysis should also include a clear discussion, using the MSEs, as to which model you feel is more appropriate.
 
 ```{r MSE loss function, echo=TRUE}
+
+#TX1 Residual sum of squares:
+TX1trainRSS <- c(crossprod(regressorTX1train$residuals))
+#TX1 Mean squared error:
+TX1trainMSE <- TX1trainRSS / length(regressorTX1train$residuals)
+#TX1 Root MSE:
+TX1trainRMSE <- sqrt(TX1trainMSE)
+TX1trainRMSE
+
+#TX2 Residual sum of squares:
+TX2trainRSS <- c(crossprod(regressorTX2train$residuals))
+#TX2 Mean squared error:
+TX2trainMSE <- TX2trainRSS / length(regressorTX2train$residuals)
+#TX2 Root MSE:
+TX2trainRMSE <- sqrt(TX2trainMSE)
+TX2trainRMSE
+
 MSE(y_pred = exp(regressorTX1train$fitted.values), y_true = TrainingTX$ABV)
 
 MSE(y_pred = exp(regressorTX2train$fitted.values), y_true = TrainingTX$ABV)

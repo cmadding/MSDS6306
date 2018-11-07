@@ -91,11 +91,16 @@ confusionMatrix(table(test$Tclient,test$TClientPred))
 
 ### KNN Regression
 
-train = data.frame(x1 = c(1,1,2,3,4,5,8), x2 = c(5,7,8,9,10,10,11), y = c(3,4,5,5,4,7,9) )
+train = data.frame(x1 = c(1,1,2,3,4,5,8), x2 = c(5,7,8,9,10,10,11), y = c(1,3,8,9,15,20,22) )
 plot(train$x1,train$x2, main = "Simple KNN Example")
 text(train$x1, train$x2, labels = train$y, pos = 4, col = "blue")
 test = data.frame(x1 = c(6), x2 = c(9), y = c(8))
-knn.reg(train,test, y = train$y)
+points(test$x1, test$x2, col= "red", pch = 15)
+fit = knnreg(x = train[,c(1,2)], y = train$y, k=3)
+predict(fit,test[, c(1,2)])
+
+#using knn.reg
+knn.reg(train,test, y = train$y, k = 3)
 
 
 # K Means Clustering 

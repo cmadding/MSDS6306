@@ -746,6 +746,34 @@ Use the MSE loss function and external cross validation to provide evidence as t
 
 
 ```r
+#TX1 Residual sum of squares:
+TX1trainRSS <- c(crossprod(regressorTX1train$residuals))
+#TX1 Mean squared error:
+TX1trainMSE <- TX1trainRSS / length(regressorTX1train$residuals)
+#TX1 Root MSE:
+TX1trainRMSE <- sqrt(TX1trainMSE)
+TX1trainRMSE
+```
+
+```
+## [1] 0.009727404
+```
+
+```r
+#TX2 Residual sum of squares:
+TX2trainRSS <- c(crossprod(regressorTX2train$residuals))
+#TX2 Mean squared error:
+TX2trainMSE <- TX2trainRSS / length(regressorTX2train$residuals)
+#TX2 Root MSE:
+TX2trainRMSE <- sqrt(TX2trainMSE)
+TX2trainRMSE
+```
+
+```
+## [1] 0.009718517
+```
+
+```r
 MSE(y_pred = exp(regressorTX1train$fitted.values), y_true = TrainingTX$ABV)
 ```
 

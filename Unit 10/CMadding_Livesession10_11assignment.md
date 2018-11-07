@@ -28,7 +28,7 @@ ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMEN
 ```r
 #R libraries used in the report
 #load libraries
-list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools", "MLmetrics", "caret", "mnormt")
+list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools", "MLmetrics", "caret", "mnormt", "Metrics")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
 
@@ -47,6 +47,7 @@ library(mnormt)
 library(mlr)
 library(FNN)
 library(magrittr)
+library(Metrics)
 ```
 
 ### I. KNN Regression versus Linear Regression
@@ -198,7 +199,7 @@ summary(TestTX)
 
 ```r
 #fit a KNN regression model to predict ABV from IBU, k = 3
-Train3TX.knn<- knn.reg(TrainingTX$IBU, test = NULL, y=TrainingTX$ABV, k=3)
+Train3TX.knn<- FNN::knn.reg(TrainingTX$IBU, y=TrainingTX$ABV, k=3)
 plot(TrainingTX$IBU, Train3TX.knn$pred, xlab="IBU", ylab="Predicted ABV", main = "KNN K=3")
 ```
 
@@ -216,7 +217,7 @@ Train3TX.knn
 
 ```r
 #fit a KNN regression model to predict ABV from IBU, k = 5
-Train5TX.knn<- knn.reg(TrainingTX$IBU, test = NULL, y=TrainingTX$ABV, k=5)
+Train5TX.knn<- knn.reg(TrainingTX$IBU, y=TrainingTX$ABV, k=5)
 plot(TrainingTX$IBU, Train5TX.knn$pred, xlab="IBU", ylab="Predicted ABV", main = "KNN K=5")
 ```
 
@@ -231,15 +232,92 @@ Train5TX.knn
 ## PRESS =  0.00576672 
 ## R2-Predict =  0.4969056
 ```
-    
-   
+
     10. Use the ASE loss function and external cross validation to provide evidence as to which model (k = 3 or k = 5) is more appropriate.  Remember your answer should be supported with why you feel a certain model is appropriate.  Your analysis should include the average squared error (ASE) for each model from the test set.  Your analysis should also include a clear discussion, using the ASEs, as to which model you feel is more appropriate.
+    
+
+```r
+# Fit the model on the training set and test out k at 3, 5 and 7
+set.seed(123)
+TXmodel <- caret::train(
+  ABV ~ IBU, data = TrainingTX, method = "knn",
+  trControl = trainControl("cv", number = 10),
+  preProcess = c("center","scale"),
+  tuneGrid = expand.grid(k = c(3, 5, 7)
+  ))
+# Plot model error RMSE vs different values of k
+plot(TXmodel)
+```
+
+![](CMadding_Livesession10_11assignment_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
+# Best tuning parameter k that minimize the RMSE
+TXmodel$bestTune
+```
+
+```
+##   k
+## 3 7
+```
+
+```r
+# Make predictions on the test data
+predictions <- TXmodel %>% predict(TestTX)
+head(predictions)
+```
+
+```
+## [1] 0.05171429 0.05171429 0.05291667 0.05462500 0.05110000 0.05110000
+```
+
+```r
+# Compute the prediction error RMSE
+RMSE(predictions, TestTX$ABV)
+```
+
+```
+## [1] 0.008617931
+```
+
+```r
+#Lets add the predictions to the test data
+TestTX$ABVPredistions <- predictions
+head(TestTX)
+```
+
+```
+##    Brewery_id                          Beer_Name Beer_ID   ABV IBU
+## 1          67                 Yo Soy Un Berliner    2520 0.044   5
+## 3          67                            Rye Wit    2522 0.042  10
+## 7         126                Weisse Versa (2012)    2374 0.052  16
+## 11         39                          Twisted X    2212 0.051  19
+## 13        119                   Bombshell Blonde     856 0.050  20
+## 15        126 Love Street Summer Seasonal (2014)    1235 0.047  20
+##                     Style Ounces                  Brewery_Name
+## 1      Berliner Weissbier     12      Freetail Brewing Company
+## 3                 Witbier     12      Freetail Brewing Company
+## 7              Hefeweizen     12       Karbach Brewing Company
+## 11 American Adjunct Lager     12     Twisted X Brewing Company
+## 13    American Blonde Ale     16 Southern Star Brewing Company
+## 15                KÃ¶lsch     12       Karbach Brewing Company
+##                City State ABVPredistions
+## 1       San Antonio    TX     0.05171429
+## 3       San Antonio    TX     0.05171429
+## 7           Houston    TX     0.05291667
+## 11 Dripping Springs    TX     0.05462500
+## 13           Conroe    TX     0.05110000
+## 15          Houston    TX     0.05110000
+```
+    From the graph above you can see the best number for R is 7.
     
 ASE=  (∑▒(y ̃_i-y_i )^2 )/n  
 
 Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the ith beer and n is the sample size.
 
     11. Now use the ASE loss function and external cross validation to provide evidence as to which model (the linear regression model from last week or the “best” KNN regression model from this week (from question 10)) is more appropriate.
+    
+    Looking at the numbers from last week, the best I could do was an RMSE of 0.009727404 with just the IBU data and 0.009718517 with the IBU squared.
    
     12. Use your “best” KNN regression model to predict the ABV for an IBU of 150, 170 and 190.  What issue do you see with using KNN to extrapolate?
     
@@ -248,8 +326,52 @@ Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the i
 We would like to be able to use ABV and IBU to classify beers between 3 styles: American IPA and American Pale Ale.
    
     13. Filter the beerCOTX dataframe for only beers that are from Texas and are American IPA and American Pale Ale.
+    
+
+```r
+#create beerTX_AIPA_APA with only TX American IPA and American Pale Ale (APA), removing NAs from IBU
+beerTX_AIPA_APA <- filter(beerTX,!is.na(IBU), Style == "American IPA" | Style == "American Pale Ale (APA)")
+head(beerTX_AIPA_APA)
+```
+
+```
+##   Brewery_id                      Beer_Name Beer_ID   ABV IBU
+## 1        185                      Slow Ride    2069 0.048  35
+## 2        214          Lakefire Rye Pale Ale    2126 0.055  35
+## 3         30 Elliott's Phoned Home Pale Ale    1182 0.051  36
+## 4        126       Weekend Warrior Pale Ale    1557 0.055  40
+## 5        258           Texas Pale Ale (TPA)    1971 0.055  40
+## 6        141                  Power & Light    2301 0.055  42
+##                     Style Ounces                 Brewery_Name
+## 1 American Pale Ale (APA)     12  Oasis Texas Brewing Company
+## 2 American Pale Ale (APA)     12      Grapevine Craft Brewery
+## 3 American Pale Ale (APA)     16          Cedar Creek Brewery
+## 4 American Pale Ale (APA)     12      Karbach Brewing Company
+## 5            American IPA     16         South Austin Brewery
+## 6 American Pale Ale (APA)     12 Independence Brewing Company
+##             City State
+## 1         Austin    TX
+## 2 Farmers Branch    TX
+## 3   Seven Points    TX
+## 4        Houston    TX
+## 5   South Austin    TX
+## 6         Austin    TX
+```
+    
    
-    14. Divide this filtered data set into a training and test set (60/40, training / test split).  
+    14. Divide this filtered data set into a training and test set (60/40, training / test split).
+    
+
+```ripa
+set.seed(7) # Set Seed so that same sample can be reproduced in future also
+split = sample.split(beerTX_AIPA_APA$ABV, SplitRatio = .6)
+TrainingTXIPA = subset(beerTX_AIPA_APA, split == TRUE)
+TestTXIPA = subset(beerTX_AIPA_APA, split == FALSE)
+#A summary of the TrainingTX data
+summary(TrainingTXIPA)
+#A summary of the TestTX data
+summary(TestTXIPA)
+```
 
     15. Use the class package’s knn function to build an KNN classifier with k = 3 that will use ABV and IBU as features (explanatory variables) to classify Texas beers as American IPA or American Pale Ale using the Training data.  Use your test set to create a confusion table to estimate the accuracy, sensitivity and specificity of the model.
    
