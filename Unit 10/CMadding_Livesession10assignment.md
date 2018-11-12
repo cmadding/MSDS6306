@@ -203,7 +203,7 @@ Train3TX.knn<- FNN::knn.reg(TrainingTX$IBU, y=TrainingTX$ABV, k=3)
 plot(TrainingTX$IBU, Train3TX.knn$pred, xlab="IBU", ylab="Predicted ABV", main = "KNN K=3")
 ```
 
-![](CMadding_Livesession10_11assignment_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+![](CMadding_Livesession10assignment_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
 ```r
 #print fit a KNN regression model to predict ABV from IBU, k = 3
@@ -221,7 +221,7 @@ Train5TX.knn<- knn.reg(TrainingTX$IBU, y=TrainingTX$ABV, k=5)
 plot(TrainingTX$IBU, Train5TX.knn$pred, xlab="IBU", ylab="Predicted ABV", main = "KNN K=5")
 ```
 
-![](CMadding_Livesession10_11assignment_files/figure-html/unnamed-chunk-2-2.png)<!-- -->
+![](CMadding_Livesession10assignment_files/figure-html/unnamed-chunk-2-2.png)<!-- -->
 
 ```r
 #Print fit a KNN regression model to predict ABV from IBU, k = 5
@@ -249,7 +249,7 @@ TXmodel <- caret::train(
 plot(TXmodel)
 ```
 
-![](CMadding_Livesession10_11assignment_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+![](CMadding_Livesession10assignment_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
 ```r
 # Best tuning parameter k that minimize the RMSE
@@ -315,22 +315,22 @@ ASE=  (∑▒(y ̃_i-y_i )^2 )/n
 
 Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the ith beer and n is the sample size.
 
-    11. Now use the ASE loss function and external cross validation to provide evidence as to which model (the linear regression model from last week or the “best” KNN regression model from this week (from question 10)) is more appropriate.
+    11. Now use the ASE loss function and external cross validation to provide evidence as to which model (the linear regression model from last week or the best KNN regression model from this week (from question 10)) is more appropriate.
     
     Looking at the numbers from last week, the best I could do was an RMSE of 0.009727404 with just the IBU data and 0.009718517 with the IBU squared.
    
-    12. Use your “best” KNN regression model to predict the ABV for an IBU of 150, 170 and 190.  What issue do you see with using KNN to extrapolate?
+    12. Use your best KNN regression model to predict the ABV for an IBU of 150, 170 and 190.  What issue do you see with using KNN to extrapolate?
     
 ### II. KNN Classification
 
-We would like to be able to use ABV and IBU to classify beers between 3 styles: American IPA and American Pale Ale.
+We would like to be able to use ABV and IBU to classify beers between 2 styles: American IPA and American Pale Ale.
    
     13. Filter the beerCOTX dataframe for only beers that are from Texas and are American IPA and American Pale Ale.
     
 
 ```r
 #create beerTX_AIPA_APA with only TX American IPA and American Pale Ale (APA), removing NAs from IBU
-beerTX_AIPA_APA <- filter(beerTX,!is.na(IBU), Style == "American IPA" | Style == "American Pale Ale (APA)")
+beerTX_AIPA_APA <- filter(beerTX, Style == "American IPA" | Style == "American Pale Ale (APA)")
 head(beerTX_AIPA_APA)
 ```
 
@@ -446,24 +446,29 @@ summary(TestTXIPA)
 ## 
 ```
 
-    15. Use the class package’s knn function to build an KNN classifier with k = 3 that will use ABV and IBU as features (explanatory variables) to classify Texas beers as American IPA or American Pale Ale using the Training data.  Use your test set to create a confusion table to estimate the accuracy, sensitivity and specificity of the model.
+    15. Use the class packages knn function to build an KNN classifier with k = 3 that will use ABV and IBU as features (explanatory variables) to classify Texas beers as American IPA or American Pale Ale using the Training data.  Use your test set to create a confusion table to estimate the accuracy, sensitivity and specificity of the model.
+    
+
+```r
+# Classification using Kmeans clustering and KNN
+resultsTXIPA3 = class::knn(TrainingTXIPA[,c(4:5)],TestTXIPA[,c(4:5)],TrainingTXIPA[,6], k = 3)
+TestTXIPA$StylePred = resultsTXIPA3
+TestTXIPAtable <- table(TestTXIPA$Style,TestTXIPA$StylePred) # function confusion Matrix only for binary classfication.
+
+#Get the confusion matrix to see accuracy value and other parameter values
+#confusionMatrix(resultsTXIPA3, TestTXIPA$Style)
+```
+    
    
-    16. Using the same process as in the last question, find the accuracy, sensitivity and specificity of a KNN model with k = 5.  Which is “better”?  Why?
+    16. Using the same process as in the last question, find the accuracy, sensitivity and specificity of a KNN model with k = 5.  Which is better?  Why?
     
-###Unit 11 Questions
 
-    1. Use the most updated code that is zipped with this. It fixes the grep problem by pasting a string with bracketed regular expression. I think someone mentioned this in class. Good call!
+```r
+resultsTXIPA5 = class::knn(TrainingTXIPA[,c(4:5)],TestTXIPA[,c(4:5)],TrainingTXIPA[,6], k = 5)
+TestTXIPA$StylePred5 = resultsTXIPA5
+```
     
-    2. Use the “snippet” instead of the headline.
     
-    3. Look at data from 1989 to 1999
-    
-    4. To provide external cross validation (50%-50%). Create a training and test set from the total number of articles.  Train the classifier on the training set and create your confusion matrix from the test set. Make sure and provide the confusion matrix.
-    
-    5. Provide accuracy, sensitivity and specificity from the confusion matrix. You may consider News to be the positive.
-    
-    6. Use you statistics from the last two questions to assess whether the headline or the snippet makes for a better classifier.
-
     BONUS (5 pts total): We did not have a lot data to build and test this classifier.  Check out the class package’s knn.cv function that will perform leave-one-out cross validation.  What is leave-one-out CV (2pts)?  Get the accuracy metric for from this function for both the k = 3 and k = 5 KNN classifiers (2pts).  Which model is suggested by the leave-one-out CV method (1pt)?
 
 Reminder 
