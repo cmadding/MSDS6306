@@ -15,7 +15,8 @@ library(RTextTools)
 library(jsonlite)
 library(ggplot2)
 
-NYTIMES_KEY = "2f797325c5fc4d00aee61d2ae3e615d1";
+#NYTIMES_KEY = "2f797325c5fc4d00aee61d2ae3e615d1";
+NYTIMES_KEY = "1dd4756fa8394d538b5db5ecb658cf0b";
 
 # Let's set some parameters
 term <- "central+park+jogger" # Need to use + to string together separate words
@@ -28,6 +29,11 @@ baseurl <- paste0("http://api.nytimes.com/svc/search/v2/articlesearch.json?q=",t
 
 initialQuery <- jsonlite::fromJSON(baseurl)
 maxPages <- round((initialQuery$response$meta$hits[1] / 10)-1)
+
+for(i in 1:100000000)
+{  
+  j = (i + 1 -1 )/i 
+}
 
 pages <- list()
 for(i in 0:maxPages){

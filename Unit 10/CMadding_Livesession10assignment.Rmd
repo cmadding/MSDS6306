@@ -220,7 +220,7 @@ TestTXIPA$StylePred5 = resultsTXIPA5
 ```
     
     
-    BONUS (5 pts total): We did not have a lot data to build and test this classifier.  Check out the class package’s knn.cv function that will perform leave-one-out cross validation.  What is leave-one-out CV (2pts)?  Get the accuracy metric for from this function for both the k = 3 and k = 5 KNN classifiers (2pts).  Which model is suggested by the leave-one-out CV method (1pt)?
+BONUS (5 pts total): We did not have a lot data to build and test this classifier.  Check out the class package’s knn.cv function that will perform leave-one-out cross validation.  What is leave-one-out CV (2pts)?  Get the accuracy metric for from this function for both the k = 3 and k = 5 KNN classifiers (2pts).  Which model is suggested by the leave-one-out CV method (1pt)?
 
 Reminder 
 To complete this assignment, please submit one RMarkdown and matching HTML file by the deadline. Please submit all files at the same time; only one submission is granted. 

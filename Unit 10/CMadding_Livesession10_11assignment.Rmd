@@ -173,13 +173,13 @@ Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the i
     
 ### II. KNN Classification
 
-We would like to be able to use ABV and IBU to classify beers between 3 styles: American IPA and American Pale Ale.
+We would like to be able to use ABV and IBU to classify beers between 2 styles: American IPA and American Pale Ale.
    
     13. Filter the beerCOTX dataframe for only beers that are from Texas and are American IPA and American Pale Ale.
     
 ```{r create beerTX_AIPA_APA,echo=TRUE}
 #create beerTX_AIPA_APA with only TX American IPA and American Pale Ale (APA), removing NAs from IBU
-beerTX_AIPA_APA <- filter(beerTX,!is.na(IBU), Style == "American IPA" | Style == "American Pale Ale (APA)")
+beerTX_AIPA_APA <- filter(beerTX, Style == "American IPA" | Style == "American Pale Ale (APA)")
 head(beerTX_AIPA_APA)
 ```
     
@@ -198,9 +198,27 @@ summary(TestTXIPA)
 ```
 
     15. Use the class packages knn function to build an KNN classifier with k = 3 that will use ABV and IBU as features (explanatory variables) to classify Texas beers as American IPA or American Pale Ale using the Training data.  Use your test set to create a confusion table to estimate the accuracy, sensitivity and specificity of the model.
+    
+```{r Classification, echo=TRUE}
+# Classification using Kmeans clustering and KNN
+resultsTXIPA3 = class::knn(TrainingTXIPA[,c(4:5)],TestTXIPA[,c(4:5)],TrainingTXIPA[,6], k = 3)
+TestTXIPA$StylePred = resultsTXIPA3
+TestTXIPAtable <- table(TestTXIPA$Style,TestTXIPA$StylePred) # function confusion Matrix only for binary classfication.
+
+#Get the confusion matrix to see accuracy value and other parameter values
+#confusionMatrix(resultsTXIPA3, TestTXIPA$Style)
+
+```
+    
    
     16. Using the same process as in the last question, find the accuracy, sensitivity and specificity of a KNN model with k = 5.  Which is better?  Why?
     
+```{r}
+resultsTXIPA5 = class::knn(TrainingTXIPA[,c(4:5)],TestTXIPA[,c(4:5)],TrainingTXIPA[,6], k = 5)
+TestTXIPA$StylePred5 = resultsTXIPA5
+
+```
+
 ###Unit 11 Questions
 
 ```{r lib and API, echo=TRUE}
@@ -238,6 +256,13 @@ initialQuery <- jsonlite::fromJSON(baseurl)
 ```{r pulling info from snippet, echo=TRUE}
 #create the number of pages to search through
 maxPages <- round((initialQuery$response$meta$hits[1] / 10)-1)
+
+
+for(i in 1:100000000)
+{  
+  j = (i + 1 -1 )/i 
+}
+
 
 #pulls down all the data from the above settings. Uses maxPages to know when to stop
 pages <- list()
@@ -304,11 +329,15 @@ for (i in 1 : dim(allNYTSearch)[1])  #This loop iterates over the articles
     articleScoreOther = articleScoreOther + (1 - Pnews_word(theText[j],allNYTSearch))
   }
   theScoreHolderNews[i] = articleScoreNews
-  theScoreHolderOther[i] = articleScoreOther
+  theScoreHolderOthers[i] = articleScoreOther
 }
 
 # Classify the aricle as News or Other based on a given piece of information from the article.
-allNYTSearch$Classified = ifelse(theScoreHolderNews > theScoreHolderOther,"News","Other")
+allNYTSearch$Classified = ifelse(theScoreHolderNews > theScoreHolderOthers,"News","Other")
+
+#Confusion Matrix
+ConMtableallNYT <- table(allNYTSearch$NewsOrOther,allNYTSearch$Classified)
+confusionMatrix(ConMtableallNYT)
 ```
     
     3. Look at data from 1989 to 1999
@@ -318,6 +347,7 @@ allNYTSearch$Classified = ifelse(theScoreHolderNews > theScoreHolderOther,"News"
     4. To provide external cross validation (50%-50%). Create a training and test set from the total number of articles.  Train the classifier on the training set and create your confusion matrix from the test set. Make sure and provide the confusion matrix.
     
 ```{r NYT training and test set, echo=TRUE}
+library(quanteda)
 #create a NYT training and test set
 set.seed(7) # Set Seed so that same sample can be reproduced in future also
 split = sample.split(allNYTSearch$NewsOrOther, SplitRatio = .5)
@@ -328,18 +358,15 @@ head(TrainingNYT)
 #A head of the TestTX data
 head(TestNYT)
 
-nb.classifierNYT<-quanteda::textmodel_NB(TrainingNYT$NewsOrOther,TrainingNYT$Classified)
-nb.classifierNYT
-
 ```
 
     5. Provide accuracy, sensitivity and specificity from the confusion matrix. You may consider News to be the positive.
     
-```{r}
+```{r Confusion Matrix on TestNYT, echo=TRUE}
 #Confusion Matrix on TestNYT
-table(TestNYT$NewsOrOther,TestNYT$Classified)
+ConMtableTestNYT <- table(TestNYT$NewsOrOther,TestNYT$Classified)
+confusionMatrix(ConMtableTestNYT)
 ```
-    
     
     6. Use you statistics from the last two questions to assess whether the headline or the snippet makes for a better classifier.
 

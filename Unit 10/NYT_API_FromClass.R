@@ -7,7 +7,7 @@ editor_options:
   
   # Sample R Code for Dealing with the NYT API
   
-  ```{r}
+
 library(dplyr)
 library(tidyr)
 library(plyr)
