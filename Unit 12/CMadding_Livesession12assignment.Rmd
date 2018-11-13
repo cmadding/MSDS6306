@@ -1,8 +1,12 @@
 ---
 title: "CMadding_Livesession12assignment"
 author: "Chad Madding"
-date: "November 13, 2018"
-output: html_document
+date: "November 26, 2018"
+output:
+  html_document:
+    keep_md: yes
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -13,16 +17,36 @@ MSDS 6306: Doing Data Science – Time Series
 Live session Unit 12 assignment
 Due: Monday, November 26th at 11:59pm
 
-####Submission
+#### Submission
 
 ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMENT. Use RMarkdown to create this file. Formatting can be basic, but it should be easily human-readable. Unless otherwise stated, please enable {r, echo=TRUE} so your code is visible.
 
-####Questions
+#### Questions
 
-####Warm Up: Brief Financial Data (20%)
+#### Warm Up: Brief Financial Data (20%)
 
-    a. Natively in R, you have access to sample data sets of prominent stocks over time.  We’ll be using EuStockMarkets for this question.  Type help(EuStockMarkets) to learn more.  From these data, pull specifically the DAX index.  For all questions in this assignment, you’re welcome to normalize (or don’t!) how you see fit, but, if you choose to, please document what you’re doing and why for the grader.  It’s not necessary for the purpose of this assignment.
-    b. These are annual European Stock Data from 1990 onward.  Create a rudimentary plot of the data.  Make the line blue. Give an informative title.  Label the axes accurately.  In 1997, an event happened you want to indicate; add a vertical red line to your plot which divides pre-1997 and post-1997 information.
+    a. Natively in R, you have access to sample data sets of prominent stocks over time. We’ll be using EuStockMarkets for this question. Type help(EuStockMarkets) to learn more. From these data, pull specifically the DAX index. For all questions in this assignment, you’re welcome to normalize (or don’t!) how you see fit, but, if you choose to, please document what you’re doing and why for the grader. It’s not necessary for the purpose of this assignment.
+    
+```{r help EuStockMarkets, echo=TRUE}
+#pull up the help on EuStockMarkets
+help(EuStockMarkets)
+data("EuStockMarkets"); # Multivariate time series available as pre defined datasets
+# These types of datasets are available in the TSA package in R
+plot.ts(EuStockMarkets,col = 'steelblue')
+#print out the EuStockMarkets index
+head(EuStockMarkets)
+str(EuStockMarkets)
+EuStockMarkets[,"DAX"]
+plot(ecdf(EuStockMarkets[,"DAX"]))
+```
+
+    b. These are annual European Stock Data from 1990 onward. Create a rudimentary plot of the data. Make the line blue. Give an informative title. Label the axes accurately.  In 1997, an event happened you want to indicate; add a vertical red line to your plot which divides pre-1997 and post-1997 information.
+    
+```{r}
+plot.ts(EuStockMarkets,col = 'steelblue')
+```
+    
+    
     c.	Decompose the time series into its components (i.e., trend, seasonality, random).  Keep in mind that this is a multiplicative model you want.  Create a plot of all decomposed components.  As before, make all lines blue and have a vertical divider at the year 1997.
     2.	Temperature Data (40%)
         a.	Using the maxtemp dataset granted by loading fpp2, there are maximum annual temperature data in Celsius.  For more information, use help(maxtemp).  To see what you’re looking at, execute the command in ‘Examples’ in the help document.
