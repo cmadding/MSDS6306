@@ -1,5 +1,5 @@
 ---
-title: "CMadding_Livesession10/11assignment"
+title: "CMadding_Livesession10assignment"
 author: "Chad Madding"
 date: "November 11, 2018"
 output:
@@ -192,11 +192,12 @@ beerTX_AIPA_APA <- filter(beerTX, Style == "American IPA" | Style == "American P
 head(beerTX_AIPA_APA)
 
 #convert to a character
-beerTX_AIPA_APA$Style <- factor (as.character(beerTX_AIPA_APA$Style), levels=c("American Pale Ale (APA)","American IPA"))
+beerTX_AIPA_APA$Style <- factor (as.character(beerTX_AIPA_APA$Style))
 
 #then back to a factor to get rid of the extra styles 
-beerTX_AIPA_APA$Style <- factor (c("American Pale Ale (APA)","American IPA"))
+beerTX_AIPA_APA$Style <- factor (beerTX_AIPA_APA$Style)
 
+str(beerTX_AIPA_APA$Style)
 ```
     
     14. Divide this filtered data set into a training and test set (60/40, training / test split).
@@ -240,185 +241,6 @@ ConMtableTestTXIPA5 <- table(TestTXIPA$Style,TestTXIPA$StylePred5)
 confusionMatrix(ConMtableTestTXIPA5)
 TestTXIPA
 ```
-
-###Unit 11 Questions
-
-```{r API, echo=TRUE}
-
-#Trying different keys because of errors in pulling down data
-#NYTIMES_KEY = "c90e2b1446ad4684b1d803b597c5cfea"
-#NYTIMES_KEY = "2f797325c5fc4d00aee61d2ae3e615d1"
-#NYTIMES_KEY = "1dd4756fa8394d538b5db5ecb658cf0b"
-NYTIMES_KEY = "151b9472131546bfb1df16cd969daad4"
-```
-
-    1. Use the most updated code that is zipped with this. It fixes the grep problem by pasting a string with bracketed regular expression. I think someone mentioned this in class. Good call!
-    
-**In the code below I set the search to look at January 1, 1989 to January 1, 1999**
-    
-```{r first parameters, echo=TRUE}
-# Let's set some parameters
-term <- "central+park+jogger" # Need to use + to string together separate words
-begin_date <- "19890101"
-end_date <- "19960101"
-
-baseurl <- paste0("http://api.nytimes.com/svc/search/v2/articlesearch.json?q=",term,
-                  "&begin_date=",begin_date,"&end_date=",end_date,
-                  "&facet_filter=true&api-key=",NYTIMES_KEY, sep="")
-
-initialQuery <- jsonlite::fromJSON(baseurl)
-```
-    
-    2. Use the snippet instead of the headline.
-    
-```{r pulling info from snippet, echo=TRUE}
-#create the number of pages to search through
-maxPages <- round((initialQuery$response$meta$hits[1] / 10)-1)
-
-#used to slow down the search to avod errors in the Times
-for(i in 1:100000000)
-{  
-  j = (i + 1 -1 )/i 
-}
-
-#pulls down all the data from the above settings. Uses maxPages to know when to stop
-pages <- list()
-for(i in 0:maxPages){
-  nytSearch <- jsonlite::fromJSON(paste0(baseurl, "&page=", i), flatten = TRUE) %>% data.frame() 
-  message("Retrieving page ", i)
-  pages[[i+1]] <- nytSearch 
-  Sys.sleep(1)
-}
-
-allNYTSearch <- rbind_pages(pages)
-
-# Visualize coverage by section
-allNYTSearch %>% 
-  group_by(response.docs.type_of_material) %>%
-  dplyr::summarize(count=n()) %>%
-  mutate(percent = (count / sum(count))*100) %>%
-  ggplot() +
-  geom_bar(aes(y=percent, x=response.docs.type_of_material, fill=response.docs.type_of_material), stat = "identity") + coord_flip()
-
-#Make another column of News versus Other ... The labels
-allNYTSearch$NewsOrOther = ifelse(allNYTSearch$response.docs.type_of_material == "News","News","Other")
-
-#This function returns P(News | Keyword) 
-#P(News|KW) = P(KW|News)* P(News) / P(KW)
-Pnews_word = function(key_word = "jogging", trainingSet)
-{
-  print(key_word)
-  NewsGroup = trainingSet[trainingSet$NewsOrOther == "News",]
-  OtherGroup = trainingSet[trainingSet$NewsOrOther == "Other",]
-  
-  pNews = dim(NewsGroup)[1] / (dim(NewsGroup)[1] + dim(OtherGroup)[1])
-  pOther = 1 - pNews
-  
-  pKWGivenNews = length(grep(paste("\\b",key_word,"\\b",sep=""),NewsGroup$response.docs.snippet,ignore.case = TRUE))/dim(NewsGroup)[1]
-  pKWGivenOther = length(grep(paste("\\b",key_word,"\\b",sep=""),OtherGroup$response.docs.snippet,ignore.case = TRUE))/dim(OtherGroup)[1]
-  
-  pKW = length(grep(paste("\\b",key_word,"\\b",sep=""),trainingSet$response.docs.snippet,ignore.case = TRUE))/dim(trainingSet)[1]
-  
-  pNewsGivenKW = pKWGivenNews*pNews/pKW
-  pOtherGivenKW = pKWGivenOther*pOther/pKW
-  
-  return(pNewsGivenKW)
-}
-
-theScoreHolderNews = c()
-theScoreHolderOthers = c()
-articleScoreNews = 0;
-articleScoreOther = 0;
-
-
-for (i in 1 : dim(allNYTSearch)[1])  #This loop iterates over the articles
-{
-  
-  articleScoreNews = 0; 
-  articleScoreOther = 0;
-  #strsplit(gsub("[^[:alnum:] ]", "", str), " +")
-  #strsplit(allNYTSearch$response.docs.snippet[i],split = " ")
-   theText = unlist(strsplit(gsub("[^[:alnum:] ]", "", allNYTSearch$response.docs.snippet[i]), " +"))
-  for(j in 1 : length(theText))  #This loop iterates over the headline (each word)
-  {
-    articleScoreNews = articleScoreNews + Pnews_word(theText[j],allNYTSearch)
-    articleScoreOther = articleScoreOther + (1 - Pnews_word(theText[j],allNYTSearch))
-  }
-  theScoreHolderNews[i] = articleScoreNews
-  theScoreHolderOthers[i] = articleScoreOther
-}
-
-# Classify the aricle as News or Other based on a given piece of information from the article.
-allNYTSearch$Classified = ifelse(theScoreHolderNews > theScoreHolderOthers,"News","Other")
-
-#Confusion Matrix
-ConMtableallNYT <- table(allNYTSearch$NewsOrOther,allNYTSearch$Classified)
-confusionMatrix(ConMtableallNYT)
-```
-    
-    3. Look at data from 1989 to 1999
-    
-  ***This is set in the begin_data and end_data in the above code***
-  **I was only able to get 8 years to run, haveing 64 pages of data was to meny.**
-    
-    4. To provide external cross validation (50%-50%). Create a training and test set from the total number of articles.  Train the classifier on the training set and create your confusion matrix from the test set. Make sure and provide the confusion matrix.
-    
-```{r NYT training and test set, echo=TRUE}
-#create a NYT training and test set
-set.seed(7) # Set Seed so that same sample can be reproduced in future also
-split = sample.split(allNYTSearch$NewsOrOther, SplitRatio = .5)
-TrainingNYT = subset(allNYTSearch, split == TRUE)
-TestNYT = subset(allNYTSearch, split == FALSE)
-
-#A head of the TrainingTX data
-head(TrainingNYT)
-
-#A head of the TestTX data
-head(TestNYT)
-
-#Train the classifier on the training set
-theScoreHolderNewsTraining = c()
-theScoreHolderOthersTraining = c()
-articleScoreNewsTraining = 0;
-articleScoreOtherTraining = 0;
-
-
-for (i in 1 : dim(TrainingNYT)[1])  #This loop iterates over the articles
-{
-  
-  articleScoreNewsTraining = 0; 
-  articleScoreOtherTraining = 0;
-  #strsplit(gsub("[^[:alnum:] ]", "", str), " +")
-  #strsplit(allNYTSearch$response.docs.snippet[i],split = " ")
-   theText = unlist(strsplit(gsub("[^[:alnum:] ]", "", TrainingNYT$response.docs.snippet[i]), " +"))
-  for(j in 1 : length(theText))  #This loop iterates over the headline (each word)
-  {
-    articleScoreNewsTraining = articleScoreNewsTraining + Pnews_word(theText[j],TrainingNYT)
-    articleScoreOtherTraining = articleScoreOtherTraining + (1 - Pnews_word(theText[j],TrainingNYT))
-  }
-  theScoreHolderNewsTraining[i] = articleScoreNewsTraining
-  theScoreHolderOthersTraining[i] = articleScoreOtherTraining
-}
-
-# Classify the aricle as News or Other based on a given piece of information from the article.
-TrainingNYT$Classified = ifelse(theScoreHolderNewsTraining > theScoreHolderOthersTraining,"News","Other")
-```
-
-    5. Provide accuracy, sensitivity and specificity from the confusion matrix. You may consider News to be the positive.
-    
-```{r Confusion Matrix on TestNYT, echo=TRUE}
-#Confusion Matrix on TrainingNYT
-ConMtableTrainingNYT <- table(TrainingNYT$NewsOrOther,TrainingNYT$Classified)
-confusionMatrix(ConMtableTrainingNYT)
-
-#Confusion Matrix on TestNYT
-ConMtableTestNYT <- table(TestNYT$NewsOrOther,TestNYT$Classified)
-confusionMatrix(ConMtableTestNYT)
-```
-    
-    6. Use you statistics from the last two questions to assess whether the headline or the snippet makes for a better classifier.
-    
-**Looking at the data from collected from the headline collection and the snippet we can see the the snippet makes for a better classifier the numbers from class where the headlines were used scored slightley lower than the snippet method used here.**
 
     BONUS (5 pts total): We did not have a lot data to build and test this classifier.
   
