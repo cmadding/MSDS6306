@@ -28,16 +28,9 @@ ALL MATERIAL MUST BE KNITTED INTO A SINGLE, LEGIBLE, AND DOCUMENTED HTML DOCUMEN
 
 ```{r librariesAndHelpers, message=FALSE}
 #R libraries used in the report
-#load libraries
-list.of.packages <- c("plyr", "dplyr", "ggplot2", "pastecs", "reshape2", "kableExtra", "sjPlot", "ggpubr", "caTools", "MLmetrics", "caret", "mnormt", "Metrics")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
-
 library(plyr)
-library(sjPlot)
 library(dplyr)
 library(caret)
-library(caTools)
 library(ggplot2)
 library(pastecs)
 library(reshape2)
@@ -49,6 +42,12 @@ library(mlr)
 library(FNN)
 library(magrittr)
 library(Metrics)
+library(tidyr)
+library(RTextTools)
+library(jsonlite)
+library(caTools)
+require(quanteda)
+require(RColorBrewer)
 ```
 
 ### I. KNN Regression versus Linear Regression
@@ -84,6 +83,8 @@ brew_beer <- merge.data.frame(beers, breweries, by = "Brewery_id")
 ```
 
     3. Clean the State Column … get rid of extraneous white space.
+    
+**This is handled with the trim fubction above.**
 
     4. Create One Dataset that has only Colorado and Texas beers and no IBU NAs … name it “beerCOTX”
 
@@ -93,7 +94,8 @@ beerCOTX <- filter(brew_beer,!is.na(IBU), State == "CO" | State == "TX")
 ```
 
     5. Order beerCOTX by IBU (ascending) ... this will be important later in graphing
-```{r}
+    
+```{r order beerCOTX bt IBU, echo=TRUE}
 beerCOTX <- beerCOTX[order(beerCOTX$IBU),]
 ```
 
@@ -106,7 +108,7 @@ beerCOTX <- beerCOTX[order(beerCOTX$IBU),]
 beerTX <- filter(beerCOTX, State == "TX")
 # Splitting the beerTX dataset into the Training set and Test set
 # install.packages('caTools')
-set.seed(7) # Set Seed so that same sample can be reproduced in future also
+set.seed(7) # Set Seed so that same sample can be reproduced in the future
 split = sample.split(beerTX$ABV, SplitRatio = .6)
 TrainingTX = subset(beerTX, split == TRUE)
 TestTX = subset(beerTX, split == FALSE)
@@ -116,27 +118,28 @@ summary(TrainingTX)
 summary(TestTX)
 ```
 
-    9. Using the training data, fit a KNN regression model to predict ABV from IBU.  You should use the knnreg function in the caret package. Fit two separate models: one with k = 3 and one with k = 5. (This is 2 models total.)
+    9. Using the training data, fit a KNN regression model to predict ABV from IBU. You should use the knnreg function in the caret package. Fit two separate models: one with k = 3 and one with k = 5. (This is 2 models total.)
     
-```{r}
+```{r fit a KNN k3, echo=TRUE}
 
-#fit a KNN regression model to predict ABV from IBU, k = 3
+#fit a KNN regression model using knn.reg to predict ABV from IBU, k = 3
 Train3TX.knn<- FNN::knn.reg(TrainingTX$IBU, y=TrainingTX$ABV, k=3)
 plot(TrainingTX$IBU, Train3TX.knn$pred, xlab="IBU", ylab="Predicted ABV", main = "KNN K=3")
 #print fit a KNN regression model to predict ABV from IBU, k = 3
 Train3TX.knn
+```
 
+```{r fit a KNN k5, echo=TRUE}
 #fit a KNN regression model to predict ABV from IBU, k = 5
 Train5TX.knn<- knn.reg(TrainingTX$IBU, y=TrainingTX$ABV, k=5)
 plot(TrainingTX$IBU, Train5TX.knn$pred, xlab="IBU", ylab="Predicted ABV", main = "KNN K=5")
 #Print fit a KNN regression model to predict ABV from IBU, k = 5
 Train5TX.knn
-
 ```
 
-    10. Use the ASE loss function and external cross validation to provide evidence as to which model (k = 3 or k = 5) is more appropriate.  Remember your answer should be supported with why you feel a certain model is appropriate.  Your analysis should include the average squared error (ASE) for each model from the test set.  Your analysis should also include a clear discussion, using the ASEs, as to which model you feel is more appropriate.
+    10. Use the ASE loss function and external cross validation to provide evidence as to which model (k = 3 or k = 5) is more appropriate. Remember your answer should be supported with why you feel a certain model is appropriate. Your analysis should include the average squared error (ASE) for each model from the test set. Your analysis should also include a clear discussion, using the ASEs, as to which model you feel is more appropriate.
     
-```{r}
+```{r ASE loss function and external cross validation, echo=TRUE}
 
 # Fit the model on the training set and test out k at 3, 5 and 7
 set.seed(123)
@@ -158,8 +161,9 @@ RMSE(predictions, TestTX$ABV)
 #Lets add the predictions to the test data
 TestTX$ABVPredistions <- predictions
 head(TestTX)
+TXmodel
 ```
-    From the graph above you can see the best number for R is 7.
+**I ran the test on a K of 3 and a K of 5. Out of those numbers the 5 scored slightly better. When I trained the TXmodel I wanted to see if there were any better values for K so I added 7 and 9 and plotted the results. Looking at the graph and the bestTune data we can now see that a K of 7 is the best number.
     
 ASE=  (∑▒(y ̃_i-y_i )^2 )/n  
 
@@ -167,10 +171,15 @@ Here y ̃_i is the predicted ABV for the ith beer, y_iis the actual ABV of the i
 
     11. Now use the ASE loss function and external cross validation to provide evidence as to which model (the linear regression model from last week or the “best” KNN regression model from this week (from question 10)) is more appropriate.
     
-    Looking at the numbers from last week, the best I could do was an RMSE of 0.009727404 with just the IBU data and 0.009718517 with the IBU squared.
+**Looking at the numbers from last week, the best I could do was an RMSE of 0.009727404 with just the IBU data and 0.009718517 with the IBU squared.**
    
     12. Use your “best” KNN regression model to predict the ABV for an IBU of 150, 170 and 190.  What issue do you see with using KNN to extrapolate?
-    
+**This is an observation so you should always be careful when you extrapolate.**
+
+```{r TXmodel is here, echo=TRUE}
+TXmodel
+```
+
 ### II. KNN Classification
 
 We would like to be able to use ABV and IBU to classify beers between 2 styles: American IPA and American Pale Ale.
@@ -183,7 +192,6 @@ beerTX_AIPA_APA <- filter(beerTX, Style == "American IPA" | Style == "American P
 head(beerTX_AIPA_APA)
 ```
     
-   
     14. Divide this filtered data set into a training and test set (60/40, training / test split).
     
 ```{r IPA training and test set, echo=TRUE}
@@ -203,46 +211,40 @@ summary(TestTXIPA)
 # Classification using Kmeans clustering and KNN
 resultsTXIPA3 = class::knn(TrainingTXIPA[,c(4:5)],TestTXIPA[,c(4:5)],TrainingTXIPA[,6], k = 3)
 TestTXIPA$StylePred = resultsTXIPA3
-TestTXIPAtable <- table(TestTXIPA$Style,TestTXIPA$StylePred) # function confusion Matrix only for binary classfication.
-
-#Get the confusion matrix to see accuracy value and other parameter values
-#confusionMatrix(resultsTXIPA3, TestTXIPA$Style)
-
+TestTXIPA
 ```
     
    
     16. Using the same process as in the last question, find the accuracy, sensitivity and specificity of a KNN model with k = 5.  Which is better?  Why?
     
-```{r}
+**The model with k = 5 out performs the other. The ability to have a larger number to group with caused this model to do better.** 
+    
+```{r accuracy sensitivity and specificity k5, echo=TRUE}
 resultsTXIPA5 = class::knn(TrainingTXIPA[,c(4:5)],TestTXIPA[,c(4:5)],TrainingTXIPA[,6], k = 5)
 TestTXIPA$StylePred5 = resultsTXIPA5
-
+TestTXIPA
 ```
 
 ###Unit 11 Questions
 
-```{r lib and API, echo=TRUE}
-library(dplyr)
-library(tidyr)
-library(plyr)
-library(RTextTools)
-library(jsonlite)
-library(ggplot2)
-library(caTools)
-require(quanteda)#natural language processing package
-require(RColorBrewer)
+```{r API, echo=TRUE}
 
-NYTIMES_KEY = "2f797325c5fc4d00aee61d2ae3e615d1"
+#Trying different keys because of errors in pulling down data
+#NYTIMES_KEY = "c90e2b1446ad4684b1d803b597c5cfea"
+#NYTIMES_KEY = "2f797325c5fc4d00aee61d2ae3e615d1"
 #NYTIMES_KEY = "1dd4756fa8394d538b5db5ecb658cf0b"
+NYTIMES_KEY = "151b9472131546bfb1df16cd969daad4"
 ```
 
     1. Use the most updated code that is zipped with this. It fixes the grep problem by pasting a string with bracketed regular expression. I think someone mentioned this in class. Good call!
+    
+**In the code below I set the search to look at January 1, 1989 to January 1, 1999**
     
 ```{r first parameters, echo=TRUE}
 # Let's set some parameters
 term <- "central+park+jogger" # Need to use + to string together separate words
 begin_date <- "19890101"
-end_date <- "19991231"
+end_date <- "19960101"
 
 baseurl <- paste0("http://api.nytimes.com/svc/search/v2/articlesearch.json?q=",term,
                   "&begin_date=",begin_date,"&end_date=",end_date,
@@ -257,12 +259,11 @@ initialQuery <- jsonlite::fromJSON(baseurl)
 #create the number of pages to search through
 maxPages <- round((initialQuery$response$meta$hits[1] / 10)-1)
 
-
+#used to slow down the search to avod errors in the Times
 for(i in 1:100000000)
 {  
   j = (i + 1 -1 )/i 
 }
-
 
 #pulls down all the data from the above settings. Uses maxPages to know when to stop
 pages <- list()
@@ -284,7 +285,6 @@ allNYTSearch %>%
   geom_bar(aes(y=percent, x=response.docs.type_of_material, fill=response.docs.type_of_material), stat = "identity") + coord_flip()
 
 #Make another column of News versus Other ... The labels
-
 allNYTSearch$NewsOrOther = ifelse(allNYTSearch$response.docs.type_of_material == "News","News","Other")
 
 #This function returns P(News | Keyword) 
@@ -343,34 +343,90 @@ confusionMatrix(ConMtableallNYT)
     3. Look at data from 1989 to 1999
     
   ***This is set in the begin_data and end_data in the above code***
+  **I was only able to get 8 years to run, haveing 64 pages of data was to meny.**
     
     4. To provide external cross validation (50%-50%). Create a training and test set from the total number of articles.  Train the classifier on the training set and create your confusion matrix from the test set. Make sure and provide the confusion matrix.
     
 ```{r NYT training and test set, echo=TRUE}
-library(quanteda)
 #create a NYT training and test set
 set.seed(7) # Set Seed so that same sample can be reproduced in future also
 split = sample.split(allNYTSearch$NewsOrOther, SplitRatio = .5)
 TrainingNYT = subset(allNYTSearch, split == TRUE)
 TestNYT = subset(allNYTSearch, split == FALSE)
+
 #A head of the TrainingTX data
 head(TrainingNYT)
+
 #A head of the TestTX data
 head(TestNYT)
 
+#Train the classifier on the training set
+theScoreHolderNewsTraining = c()
+theScoreHolderOthersTraining = c()
+articleScoreNewsTraining = 0;
+articleScoreOtherTraining = 0;
+
+
+for (i in 1 : dim(TrainingNYT)[1])  #This loop iterates over the articles
+{
+  
+  articleScoreNewsTraining = 0; 
+  articleScoreOtherTraining = 0;
+  #strsplit(gsub("[^[:alnum:] ]", "", str), " +")
+  #strsplit(allNYTSearch$response.docs.snippet[i],split = " ")
+   theText = unlist(strsplit(gsub("[^[:alnum:] ]", "", TrainingNYT$response.docs.snippet[i]), " +"))
+  for(j in 1 : length(theText))  #This loop iterates over the headline (each word)
+  {
+    articleScoreNewsTraining = articleScoreNewsTraining + Pnews_word(theText[j],TrainingNYT)
+    articleScoreOtherTraining = articleScoreOtherTraining + (1 - Pnews_word(theText[j],TrainingNYT))
+  }
+  theScoreHolderNewsTraining[i] = articleScoreNewsTraining
+  theScoreHolderOthersTraining[i] = articleScoreOtherTraining
+}
+
+# Classify the aricle as News or Other based on a given piece of information from the article.
+TrainingNYT$Classified = ifelse(theScoreHolderNewsTraining > theScoreHolderOthersTraining,"News","Other")
 ```
 
     5. Provide accuracy, sensitivity and specificity from the confusion matrix. You may consider News to be the positive.
     
 ```{r Confusion Matrix on TestNYT, echo=TRUE}
+#Confusion Matrix on TrainingNYT
+ConMtableTrainingNYT <- table(TrainingNYT$NewsOrOther,TrainingNYT$Classified)
+confusionMatrix(ConMtableTrainingNYT)
+
 #Confusion Matrix on TestNYT
 ConMtableTestNYT <- table(TestNYT$NewsOrOther,TestNYT$Classified)
 confusionMatrix(ConMtableTestNYT)
 ```
     
     6. Use you statistics from the last two questions to assess whether the headline or the snippet makes for a better classifier.
+    
+**Looking at the data from collected from the headline collection and the snippet we can see the the snippet makes for a better classifier the numbers from class where the headlines were used scored slightley lower than the snippet method used here.**
 
-    BONUS (5 pts total): We did not have a lot data to build and test this classifier.  Check out the class package’s knn.cv function that will perform leave-one-out cross validation.  What is leave-one-out CV (2pts)?  Get the accuracy metric for from this function for both the k = 3 and k = 5 KNN classifiers (2pts).  Which model is suggested by the leave-one-out CV method (1pt)?
+    BONUS (5 pts total): We did not have a lot data to build and test this classifier.
+  
+    Check out the class package’s knn.cv function that will perform leave-one-out cross validation.
+  
+    What is leave-one-out CV (2pts)?
+  
+  **"Leave-one-out cross validation is K-fold cross validation taken to its logical extreme, with K equal to N, the number of data points in the set." https://www.cs.cmu.edu/~schneide/tut5/node42.html**
+  
+    Get the accuracy metric for from this function for both the k = 3 and k = 5 KNN classifiers (2pts).
+    
+```{r accuracy metric for k3, echo=TRUE}
+resultsTXIPA3knn.cv <- knn.cv(TrainingTXIPA[,c(4:5)], TrainingTXIPA[,6], k = 3, prob = TRUE)
+resultsTXIPA3knn.cv
+```
+
+```{r accuracy metric for k5, echo=TRUE}
+resultsTXIPA5knn.cv <- knn.cv(TrainingTXIPA[,c(4:5)], TrainingTXIPA[,6], k = 5, prob = TRUE)
+resultsTXIPA5knn.cv
+```
+    
+    Which model is suggested by the leave-one-out CV method (1pt)?
+    
+  **The k=5 model.**
 
 Reminder 
 To complete this assignment, please submit one RMarkdown and matching HTML file by the deadline. Please submit all files at the same time; only one submission is granted. 
