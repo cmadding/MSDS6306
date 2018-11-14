@@ -1,0 +1,236 @@
+---
+title: "UNIT 10_11 HW"
+author: "Bivin"
+date: "11/13/2018"
+output:
+  word_document: default
+  html_document: default
+---
+
+#Chapter 10 Part
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+#load beer and breweries datasets
+beer = read.csv("Data/Beers.csv",header = TRUE);
+breweries = read.csv("Data/Breweries.csv",header = TRUE)
+# Create column for brewery ID that is common to both DFs so we can merge.
+breweries = mutate(breweries,Brewery_id = Brew_ID)
+# Merge beer and brewery data.
+beerDF = merge(beer,breweries,"Brewery_id")
+# Clean the State Column
+beerDF = beerDF %>% mutate(State = trimws(State))
+#Create One Dataset that has both Colorado and Texas and no IBU NAs.
+beerTX = beerDF %>% filter(!is.na(IBU)) %>% filter(State == "TX")
+
+#random training set for COMBINED DATA
+dim(beerTX) #89 Rows
+beerTX$rand_number = runif(89,0,1)
+trainTX = beerTX[beerTX$rand_number < .6,]
+testTX = beerTX[beerTX$rand_number > .6,]
+
+```
+# 9.and 10.  KNN Regression and ASE
+```{r}
+library(caret)
+
+#k = 3
+fit3 =  knnreg(x = trainTX[,c(5,5)], y = trainTX$ABV, k = 3)
+preds3 = predict(fit3,testTX[,c(5,5)])
+ASE3 = sqrt(sum((testTX$ABV - preds3)^2)/length(testTX$ABV))
+ASE3
+
+#k = 5
+fit5 =  knnreg(x = trainTX[,c(5,5)], y = trainTX$ABV, k = 5)
+preds5 = predict(fit5,testTX[,c(5,5)])
+ASE5 = sqrt(sum((testTX$ABV - preds5 )^2)/length(testTX$ABV))
+ASE5
+```
+
+#11. Just compare ASE with that of linear regressino model from Unit 9
+
+#12. Extrapolate 150, 170 ,190
+```{r}
+testTX2 = data.frame(IBU = c(150,170,190))
+fitExtr =  knnreg(x = trainTX[,c(5,5)], y = trainTX$ABV, k = 5)
+predsExtr = predict(fitExtr,testTX2[,c(1,1)])
+predsExtr
+```
+
+# 13 Filter from Texas and are American IPA and American Pale Ale.
+```{r}
+beerTX2 = beerDF %>% filter(!is.na(IBU)) %>% filter(State == "TX" & (Style == "American IPA" | Style == "American Pale Ale (APA)"))
+beerTX2$Style = factor(beerTX2$Style,levels = c("American IPA", "American Pale Ale (APA)"))
+```
+
+#14. Training Test
+```{r}
+dim(beerTX2) #89 Rows
+beerTX2$rand_number = runif(18,0,1)
+trainTX2 = beerTX2[beerTX2$rand_number < .6,]
+testTX2 = beerTX2[beerTX2$rand_number > .6,]
+```
+
+#15. knn using the class package
+#Note... you cannot put the repsonse in teh train and test arguments.  
+```{r}
+results = class::knn(trainTX2[,c(4,5)],testTX2[,c(4,5)],trainTX2$Style,k = 3)
+testTX2$StylePred = results
+confusionMatrix(table(testTX2$StylePred,testTX2$Style))
+```
+
+#BONUS: I used all the data (all 18) as the "training set here
+```{r}
+results = class::knn.cv(beerTX2[,4,5],beerTX2$Style, k = 3)
+beerTX2$StylePred2 = results
+confusionMatrix(table(beerTX2$StylePred2,beerTX2$Style))
+
+results = class::knn.cv(beerTX2[,4,5],beerTX2$Style, k = 5)
+beerTX2$StylePred2 = results
+confusionMatrix(table(beerTX2$StylePred2,beerTX2$Style))
+```
+
+# Chapter 11 part of the Assignment 
+
+```{r echo = FALSE}
+library(dplyr)
+library(tidyr)
+library(plyr)
+library(rjson)
+library(RTextTools)
+library(jsonlite)
+
+
+
+NYTIMES_KEY = "Your_Number_Here";
+```
+
+#After the key has been entered (hidden) ... we can download the articles.  
+Note: There is a limit as to how many times you can use a given API key.  
+You will get a htp 429 message if you overuse an API key.  
+```{r}
+# Let's set some parameters
+term <- "central+park+jogger" # Need to use + to string together separate words
+begin_date <- "19890419"
+end_date <- "19990901"
+
+baseurl <- paste0("http://api.nytimes.com/svc/search/v2/articlesearch.json?q=",term,
+                  "&begin_date=",begin_date,"&end_date=",end_date,
+                  "&facet_filter=true&api-key=",NYTIMES_KEY, sep="")
+
+initialQuery <- jsonlite::fromJSON(baseurl)
+maxPages <- round((initialQuery$response$meta$hits[1] / 10)-1)
+
+
+for(i in 1:100000000)
+{  
+  j = (i + 1 -1 )/i 
+}
+
+pages <- list()
+for(i in 0:maxPages){
+  nytSearch <- jsonlite::fromJSON(paste0(baseurl, "&page=", i), flatten = TRUE) %>% data.frame() 
+  message("Retrieving page ", i)
+  pages[[i+1]] <- nytSearch 
+  Sys.sleep(1) 
+}
+
+# acumulate the pages from the NYT download
+allNYTSearch <- rbind_pages(pages)
+
+
+#Make another column of News versus Other ... The labels
+
+allNYTSearch$NewsOrOther = ifelse(allNYTSearch$response.docs.type_of_material == "News","News","Other")
+
+# initialize the column that will hold the labels from classfication.
+allNYTSearch$Classified = c()
+
+#This function .... 
+Pnews_word = function(key_word = "jogging", trainingSet)
+{
+  #print(key_word)
+  NewsGroup = trainingSet[trainingSet$NewsOrOther == "News",]
+  OtherGroup = trainingSet[trainingSet$NewsOrOther == "Other",]
+  
+  pNews = dim(NewsGroup)[1] / (dim(NewsGroup)[1] + dim(OtherGroup)[1])
+  pOther = 1 - pNews
+  
+  pKWGivenNews = length(grep(paste("\\b",key_word,"\\b",sep=""),gsub("[^[:alnum:] ]", "", NewsGroup$response.docs.snippet),ignore.case = TRUE))/dim(NewsGroup)[1]
+  pKWGivenOther = length(grep(paste("\\b",key_word,"\\b",sep=""),gsub("[^[:alnum:] ]", "", OtherGroup$response.docs.snippet),ignore.case = TRUE))/dim(OtherGroup)[1]
+  
+  pKW = length(grep(paste("\\b",key_word,"\\b",sep=""),gsub("[^[:alnum:] ]", "", trainingSet$response.docs.snippet),ignore.case = TRUE))/dim(trainingSet)[1]
+  
+  pNewsGivenKW = 0
+  pOtherGivenKW = 0
+  
+  #print(pOther)
+  #print(pKWGivenNews)
+  #print(pKWGivenOther)
+  #print(pKW)
+  
+  
+  if(pKW != 0)
+  {
+    pNewsGivenKW = pKWGivenNews*pNews/pKW
+    pOtherGivenKW = pKWGivenOther*pOther/pKW
+  }
+  
+  
+  #print(pOtherGivenKW)
+  return(pNewsGivenKW)
+}
+
+
+# Split into Training and Test
+#Big loop with Test but send Training to get conditional probabililties
+
+allNYTSearch$rand = runif(dim(allNYTSearch)[1],0,1)
+train = allNYTSearch[allNYTSearch$rand < .5,]
+test = allNYTSearch[allNYTSearch$rand > .5,]
+
+# Initialize the arrays to hold the classified labels
+#These cannot be definied in the loop or they will only exist in the loop.  
+theScoreHolderNews= c()
+theScoreHolderOther = c()
+#Initialize the score variables.
+#Again, these cannot be definied in the loop or they will only exist in the loop. 
+articleScoreNews = 0;
+articleScoreOther = 0;
+
+#dim(allNYTSearch)[1]
+for (i in 1 : dim(test)[1])  #This loop interates over all test articles
+{
+  print(paste("Percent complete: ", round(i/dim(test)[1] * 100, digits = 2), "%"))
+  articleScoreNews = 0; 
+  articleScoreOther = 0;
+  #strsplit(gsub("[^[:alnum:] ]", "", str), " +")
+  #strsplit(allNYTSearch$response.docs.headline.main[i],split = " ")
+  theText = unlist(strsplit(gsub("[^[:alnum:] ]", "", test$response.docs.snippet[i]), " +")) #each word in test snippet for an article
+  if(length(theText>0))
+  {
+    for(j in 1 : length(theText))  #This loop iterates over ... 
+    {
+      
+      articleScoreNews = articleScoreNews + Pnews_word(theText[j],train)  #send the training to get probablities.
+      articleScoreOther = articleScoreOther + (1 - Pnews_word(theText[j],train))  #send the training to get probablities.
+      
+    }
+  }
+  theScoreHolderNews[i] = articleScoreNews
+  theScoreHolderOther[i] = articleScoreOther
+}
+```
+
+# Classify the test aricles as News or Other based on the snippet score.
+```{r}
+test$Classified = ifelse(theScoreHolderNews > theScoreHolderOther,"News","Other")
+```
+
+#Confusion Matrix
+```{r}
+table(test$NewsOrOther,test$Classified) # This will produce the Sensitivity, Specificity and Accuracy.
+```
