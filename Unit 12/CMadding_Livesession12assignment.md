@@ -32,13 +32,17 @@ head(EuStockMarkets)
 ```
 
 ```
-##          DAX    SMI    CAC   FTSE
-## [1,] 1628.75 1678.1 1772.8 2443.6
-## [2,] 1613.63 1688.5 1750.5 2460.2
-## [3,] 1606.51 1678.6 1718.0 2448.2
-## [4,] 1621.04 1684.1 1708.1 2470.4
-## [5,] 1618.16 1686.6 1723.1 2484.7
-## [6,] 1610.61 1671.6 1714.3 2466.8
+## Time Series:
+## Start = c(1991, 130) 
+## End = c(1991, 135) 
+## Frequency = 260 
+##              DAX    SMI    CAC   FTSE
+## 1991.496 1628.75 1678.1 1772.8 2443.6
+## 1991.500 1613.63 1688.5 1750.5 2460.2
+## 1991.504 1606.51 1678.6 1718.0 2448.2
+## 1991.508 1621.04 1684.1 1708.1 2470.4
+## 1991.512 1618.16 1686.6 1723.1 2484.7
+## 1991.515 1610.61 1671.6 1714.3 2466.8
 ```
 
 ```r
@@ -81,32 +85,11 @@ abline(v=1997, col="red")
 ```
 
 ![](CMadding_Livesession12assignment_files/figure-html/trend seasonality random DAX-1.png)<!-- -->
+
 #### 2. Temperature Data (40%)
       
     a. Using the maxtemp dataset granted by loading fpp2, there are maximum annual temperature data in Celsius. For more information, use help(maxtemp). To see what you’re looking at, execute the command in ‘Examples’ in the help document.
 
-
-```r
-#install.packages('fpp2')
-#loading fpp2
-library(fpp2)
-```
-
-```
-## Loading required package: ggplot2
-```
-
-```
-## Loading required package: forecast
-```
-
-```
-## Loading required package: fma
-```
-
-```
-## Loading required package: expsmooth
-```
 
 ```r
 #help(maxtemp)
@@ -132,17 +115,59 @@ head(maxtemp1990)
 ## Frequency = 1 
 ## [1] 39.0 41.3 38.7 37.8 38.9 39.7
 ```
+
+```r
+#blue line, an informative title and axes labeled accurately
+plot(maxtemp1990, col="blue", main="Temperatures At Moorabbin Airport, Melbourne" , xlab="Year" ,ylab="Temperature")
+```
+
+![](CMadding_Livesession12assignment_files/figure-html/maxtemp1990-1.png)<!-- -->
         
-        c.	Utilize SES to predict the next five years of maximum temperatures in Melbourne.  Plot this information, including the prior information and the forecast.  Add the predicted value line across 1990-present as a separate line, preferably blue.  So, to review, you should have your fit, the predicted value line overlaying it, and a forecast through 2021, all on one axis. Find the AICc and BIC of this fitted model.  You will use that information later.
+        c. Utilize SES to predict the next five years of maximum temperatures in Melbourne. Plot this information, including the prior information and the forecast. Add the predicted value line across 1990-present as a separate line, preferably blue.  So, to review, you should have your fit, the predicted value line overlaying it, and a forecast through 2021, all on one axis. Find the AICc and BIC of this fitted model.  You will use that information later.
+        
+
+```r
+#ses to predict the next five years
+predictMA <- ses(maxtemp1990, h=5)
+#Plot prior information and the forecast
+plot(predictMA, PI = FALSE, ylab="Temperature", xlab="Year", main="Forecast of Temperatures At Moorabbin Airport, Melbourne", fcol="red", type="o")
+lines(fitted(predictMA), col="blue",type="o")
+```
+
+![](CMadding_Livesession12assignment_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
+
+```r
+#the AICc and BIC of this fitted model
+predictMA$model
+```
+
+```
+## Simple exponential smoothing 
+## 
+## Call:
+##  ses(y = maxtemp1990, h = 5) 
+## 
+##   Smoothing parameters:
+##     alpha = 0.2164 
+## 
+##   Initial states:
+##     l = 39.345 
+## 
+##   sigma:  2.4135
+## 
+##      AIC     AICc      BIC 
+## 140.4868 141.5302 144.3743
+```
+
         d.	Now use a damped Holt’s linear trend to also predict out five years.  Make sure initial=“optimal.”  As above, create a similar plot to 1C, but use the Holt fit instead.
         e.	Compare the AICc and BIC of the ses() and holt() models.  Which model is better here?
         f. Calculate and compare the ASE from the ses() and holt() models.  Which one performs better with respect to this metric?
-    3. The Wands Choose the Wizard (40%)
-        a. Utilize the dygraphs library.  Read in both Unit12TimeSeries_Ollivander and _Gregorovitch.csv as two different data frames.  They do not have headers, so make sure you account for that.  This is a time series of Wands sold over years.
+#### 3. The Wands Choose the Wizard (40%)
+        a. Utilize the dygraphs library. Read in both Unit12TimeSeries_Ollivander and _Gregorovitch.csv as two different data frames. They do not have headers, so make sure you account for that. This is a time series of Wands sold over years.
         b. You don’t have your information in the proper format!  In both data sets, you’ll need to first convert the date-like variable to an actual Date class.
         c. Use the library xts (and the xts() function in it) to make each data frame an xts object (effectively, a time series). You’ll want to order.by the Date variable.
-        d. Bind the two xts objects together and create a dygraph from it.  Utilize the help() index if you’re stuck.
-        •	Give an effective title and x/y axes.
+        d. Bind the two xts objects together and create a dygraph from it. Utilize the help() index if you’re stuck.
+        • Give an effective title and x/y axes.
         •	Label each Series (via dySeries) to be the appropriate wand-maker.  So, one line should create a label for Ollivander and the other for Gregorovitch.
         •	Stack this graph and modify the two lines to be different colors (and not the default ones!)  Any colors are fine, but make sure they’re visible and that Ollivander is a different color than Gregorovitch.
         •	Activate a range selector and make it big enough to view.
@@ -151,6 +176,6 @@ head(maxtemp1990)
 
 ####Reminder
 
-To complete this assignment, please submit one RMarkdown and matching HTML file at least one hour before your live session.  Please submit all files at the same time; only one submission is granted. 
+    To complete this assignment, please submit one RMarkdown and matching HTML file at least one hour before your live session.  Please submit all files at the same time; only one submission is granted. 
 
 Good luck!
