@@ -87,8 +87,8 @@ head(maxtemp1990)
 plot(maxtemp1990, col="blue", main="Temperatures At Moorabbin Airport, Melbourne" , xlab="Year" ,ylab="Temperature")
 ```
         
-        c. Utilize SES to predict the next five years of maximum temperatures in Melbourne. Plot this information, including the prior information and the forecast. Add the predicted value line across 1990-present as a separate line, preferably blue.  So, to review, you should have your fit, the predicted value line overlaying it, and a forecast through 2021, all on one axis. Find the AICc and BIC of this fitted model.  You will use that information later.
-        
+        c. Utilize SES to predict the next five years of maximum temperatures in Melbourne. Plot this information, including the prior information and the forecast. Add the predicted value line across 1990-present as a separate line, preferably blue. So, to review, you should have your fit, the predicted value line overlaying it, and a forecast through 2021, all on one axis. Find the AICc and BIC of this fitted model. You will use that information later.
+
 ```{r ses to predict the next five years, echo=TRUE}
 #ses to predict the next five years
 predictMA <- ses(maxtemp1990, h=5)
@@ -110,11 +110,17 @@ lines(fitted(DampHolt), col="blue", type="o")
 DampHolt$model
 ```
 
-        e.	Compare the AICc and BIC of the ses() and holt() models. Which model is better here?
+        e. Compare the AICc and BIC of the ses() and holt() models. Which model is better here?
         
-        Simple exponential smoothing
-        |   AIC  |  AICc  |   BIC  |
-        |140.4868|141.5302|144.3743|
+    1. Simple exponential smoothing
+        AICc - 141.5302
+        BIC - 144.3743
+        
+    2. Damped Holt's method
+        AICc - 145.5865
+        BIC - 149.1615
+        
+  **From the numbers above we can see that the Simple exponential smoothing has the better fit.**
         
 ```{r Compare the AICc and BIC, echo=TRUE}
 #Compare the AICc and BIC of the "Simple exponential smoothing"
@@ -124,21 +130,68 @@ DampHolt$model
 ```
 
         f. Calculate and compare the ASE from the ses() and holt() models.  Which one performs better with respect to this metric?
-        
+
 #### 3. The Wands Choose the Wizard (40%)
 
         a. Utilize the dygraphs library. Read in both Unit12TimeSeries_Ollivander and _Gregorovitch.csv as two different data frames. They do not have headers, so make sure you account for that. This is a time series of Wands sold over years.
+        
+```{r the dygraphs library, echo=TRUE}
+#install.packages("dygraphs")
+library(dygraphs)
+# read in both Unit12TimeSeries_Ollivander and _Gregorovitch.csv as two different data frames
+Gregorovitch <- read.csv("Unit12TimeSeries_Gregorovitch.csv", header = FALSE)
+Ollivander <- read.csv("Unit12TimeSeries_Ollivander.csv", header = FALSE)
+```
 
         b. You don’t have your information in the proper format!  In both data sets, you’ll need to first convert the date-like variable to an actual Date class.
+        
+```{r wand data clean up, echo=TRUE}
+#add titles to the Ollivander data
+names(Ollivander)<-c("Date", "OllivanderWands")
+#convert the date variable to an actual Date class
+Ollivander$Date <- as.Date(Ollivander$Date, "%m/%d/%Y")
+#add titles to the Gregorovitch data
+names(Gregorovitch)<-c("Date", "GregorovitchWands")
+#convert the date variable to an actual Date class
+Gregorovitch$Date <- as.Date(Gregorovitch$Date, "%m/%d/%Y")
+```
 
         c. Use the library xts (and the xts() function in it) to make each data frame an xts object (effectively, a time series). You’ll want to order.by the Date variable.
+        
+```{r}
+#install.packages("xts")
+library(xts)
+#make each data frame an extensible time-series object (xts) ordred by the Date variable
+Ollivander.xts <- xts(Ollivander[,-1], order.by = Ollivander$Date)
+Gregorovitch.xts <- xts(Gregorovitch[,-1], order.by = Gregorovitch$Date)
+```
+
         d. Bind the two xts objects together and create a dygraph from it. Utilize the help() index if you’re stuck.
         • Give an effective title and x/y axes.
-        •	Label each Series (via dySeries) to be the appropriate wand-maker.  So, one line should create a label for Ollivander and the other for Gregorovitch.
+        •	Label each Series (via dySeries) to be the appropriate wand-maker. So, one line should create a label for Ollivander and the other for Gregorovitch.
         •	Stack this graph and modify the two lines to be different colors (and not the default ones!)  Any colors are fine, but make sure they’re visible and that Ollivander is a different color than Gregorovitch.
         •	Activate a range selector and make it big enough to view.
         •	Use dyShading to illuminate approximately when Voldemort was revived and at-large: between 1995 to 1999.
         •	Enable Highlighting on the graph, so mousing over a line bolds it.
+        
+```{r bind and graph, echo=TRUE}
+#help(xts)
+#help(dygraph)
+#bind the two xts objects together
+Olli_Greg <- merge(Ollivander.xts,Gregorovitch.xts,all=TRUE)
+#create a dygraph from it, title and lable x/y axes
+dygraph(Olli_Greg, main = "Wands Sales By Year", xlab = "Year", ylab = "Total Wands Sold") %>%
+  #Label each Series (via dySeries) to be the appropriate wand-maker
+  dySeries("Ollivander.xts", label = "Ollivander") %>%
+  dySeries("Gregorovitch.xts", label = "Gregorovitch") %>%
+  #stack the graph and modify the two lines to be different colors
+  dyOptions(colors = RColorBrewer::brewer.pal(3, "Set1")) %>%
+  #Use dyShading to illuminate approximately when Voldemort was revived
+  dyShading(from = "1995-1-1", to = "1999-1-1", color = "#CCEBD6") %>%
+  #Enable Highlighting on the graph
+  dyHighlight(highlightSeriesOpts = list(strokeWidth = 3)) %>%
+  dyRangeSelector(height = 100)
+```
 
 ####Reminder
 
