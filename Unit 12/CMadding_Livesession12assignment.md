@@ -130,11 +130,12 @@ plot(maxtemp1990, col="blue", main="Temperatures At Moorabbin Airport, Melbourne
 #ses to predict the next five years
 predictMA <- ses(maxtemp1990, h=5)
 #Plot prior information and the forecast
-plot(predictMA, PI = FALSE, ylab="Temperature", xlab="Year", main="Forecast of Temperatures At Moorabbin Airport, Melbourne", fcol="red", type="o")
+plot(predictMA, PI = FALSE, ylab="Temperature", xlab="Year", main="Forecast of Temperatures At Moorabbin Airport, Melbourne", fcol="blue", type="o")
+#Add the predicted value line across 1990-present
 lines(fitted(predictMA), col="blue",type="o")
 ```
 
-![](CMadding_Livesession12assignment_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
+![](CMadding_Livesession12assignment_files/figure-html/ses to predict the next five years-1.png)<!-- -->
 
 ```r
 #the AICc and BIC of this fitted model
@@ -159,12 +160,107 @@ predictMA$model
 ## 140.4868 141.5302 144.3743
 ```
 
-        d.	Now use a damped Holt’s linear trend to also predict out five years.  Make sure initial=“optimal.”  As above, create a similar plot to 1C, but use the Holt fit instead.
-        e.	Compare the AICc and BIC of the ses() and holt() models.  Which model is better here?
+        d. Now use a damped Holt’s linear trend to also predict out five years. Make sure initial=“optimal.” As above, create a similar plot to 1C, but use the Holt fit instead.
+
+
+```r
+#damped Holt to predict out five years with initial set to optimal
+DampHolt <- holt(maxtemp1990, initial="optimal", h=5, damped=TRUE)
+plot(DampHolt, ylab="Celsius Temperature", xlab= "Year", main="Forecast with Holt Fit")
+lines(fitted(DampHolt), col="blue", type="o")
+```
+
+![](CMadding_Livesession12assignment_files/figure-html/damped Holt’s linear trend-1.png)<!-- -->
+
+```r
+DampHolt$model
+```
+
+```
+## Damped Holt's method 
+## 
+## Call:
+##  holt(y = maxtemp1990, h = 5, damped = TRUE, initial = "optimal") 
+## 
+##   Smoothing parameters:
+##     alpha = 1e-04 
+##     beta  = 1e-04 
+##     phi   = 0.98 
+## 
+##   Initial states:
+##     l = 38.8993 
+##     b = 0.1678 
+## 
+##   sigma:  2.3409
+## 
+##      AIC     AICc      BIC 
+## 141.3865 145.5865 149.1615
+```
+
+        e.	Compare the AICc and BIC of the ses() and holt() models. Which model is better here?
+        
+        Simple exponential smoothing
+        |   AIC  |  AICc  |   BIC  |
+        |140.4868|141.5302|144.3743|
+        
+
+```r
+#Compare the AICc and BIC of the "Simple exponential smoothing"
+predictMA$model
+```
+
+```
+## Simple exponential smoothing 
+## 
+## Call:
+##  ses(y = maxtemp1990, h = 5) 
+## 
+##   Smoothing parameters:
+##     alpha = 0.2164 
+## 
+##   Initial states:
+##     l = 39.345 
+## 
+##   sigma:  2.4135
+## 
+##      AIC     AICc      BIC 
+## 140.4868 141.5302 144.3743
+```
+
+```r
+#and "Damped Holt's method"
+DampHolt$model
+```
+
+```
+## Damped Holt's method 
+## 
+## Call:
+##  holt(y = maxtemp1990, h = 5, damped = TRUE, initial = "optimal") 
+## 
+##   Smoothing parameters:
+##     alpha = 1e-04 
+##     beta  = 1e-04 
+##     phi   = 0.98 
+## 
+##   Initial states:
+##     l = 38.8993 
+##     b = 0.1678 
+## 
+##   sigma:  2.3409
+## 
+##      AIC     AICc      BIC 
+## 141.3865 145.5865 149.1615
+```
+
         f. Calculate and compare the ASE from the ses() and holt() models.  Which one performs better with respect to this metric?
+        
 #### 3. The Wands Choose the Wizard (40%)
+
         a. Utilize the dygraphs library. Read in both Unit12TimeSeries_Ollivander and _Gregorovitch.csv as two different data frames. They do not have headers, so make sure you account for that. This is a time series of Wands sold over years.
+
         b. You don’t have your information in the proper format!  In both data sets, you’ll need to first convert the date-like variable to an actual Date class.
+
         c. Use the library xts (and the xts() function in it) to make each data frame an xts object (effectively, a time series). You’ll want to order.by the Date variable.
         d. Bind the two xts objects together and create a dygraph from it. Utilize the help() index if you’re stuck.
         • Give an effective title and x/y axes.
