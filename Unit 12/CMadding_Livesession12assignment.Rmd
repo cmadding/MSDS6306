@@ -97,7 +97,6 @@ plot(maxtemp1990.ses, PI = FALSE, ylab="Temperature", xlab="Year", main="Forecas
 #Add the predicted value line across 1990-present
 lines(fitted(maxtemp1990.ses), col="blue",type="o")
 #the AICc and BIC of this fitted model
-maxtemp1990.ses$model
 ```
 
         d. Now use a damped Holt’s linear trend to also predict out five years. Make sure initial=“optimal.” As above, create a similar plot to 1C, but use the Holt fit instead.
@@ -107,19 +106,15 @@ maxtemp1990.ses$model
 maxtemp1990.holt <- holt(maxtemp1990, initial="optimal", h=5, damped=TRUE)
 plot(maxtemp1990.holt, ylab="Celsius Temperature", xlab= "Year", main="Forecast with Holt Fit")
 lines(fitted(maxtemp1990.holt), col="blue", type="o")
-maxtemp1990.holt$model
 ```
 
         e. Compare the AICc and BIC of the ses() and holt() models. Which model is better here?
         
-    1. Simple exponential smoothing
-        AICc - 141.5302
-        BIC - 144.3743
-        
-    2. Damped Holt's method
-        AICc - 145.5865
-        BIC - 149.1615
-        
+| Models|    AICc   |   BIC    |
+|:-----:|:---------:|:--------:|
+| ses() |  141.5302 | 144.3743 |
+|holt() |  145.5865 | 149.1615 |
+
   **From the numbers above we can see that the Simple exponential smoothing has the better fit.**
         
 ```{r Compare the AICc and BIC, echo=TRUE}
