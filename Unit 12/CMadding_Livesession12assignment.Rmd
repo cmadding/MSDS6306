@@ -10,7 +10,6 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 #install.packages('fpp')
 library(fpp)
 #install.packages('fpp2')
@@ -135,20 +134,20 @@ maxtemp1990.holt$model
 ```{r ase for ses, echo=TRUE}
 #SSE of maxtemp1990 using the ses method
 maxtemp1990.ses.SSE <- sum(residuals(maxtemp1990.ses)^2)
-# the number of samples in the maxtemp1990 data (N)
-maxtemp1990.ses.N <- length(maxtemp1990.ses$residuals)
-#the ase for the SES method (SSE/N)
-maxtemp1990.ses.ASE <- maxtemp1990.ses.SSE / maxtemp1990.ses.N
+# the number of samples in the maxtemp1990 data (n)
+maxtemp1990.ses.n <- length(maxtemp1990.ses$residuals)
+#the ase for the SES method (SSE/n)
+maxtemp1990.ses.ASE <- maxtemp1990.ses.SSE / maxtemp1990.ses.n
 maxtemp1990.ses.ASE
 ```
 
 ```{r ase for maxtemp1990.holt, echo=TRUE}
 #SSE of maxtemp1990 using the holt method
 maxtemp1990.holt.SSE <- sum(residuals(maxtemp1990.holt)^2)
-# the number of samples in the maxtemp1990 data (N)
-maxtemp1990.holt.N <- length(maxtemp1990.holt$residuals)
-#the ase for the SES method (SSE/N)
-maxtemp1990.holt.ASE <- maxtemp1990.holt.SSE / maxtemp1990.holt.N
+# the number of samples in the maxtemp1990 data (n)
+maxtemp1990.holt.n <- length(maxtemp1990.holt$residuals)
+#the ase for the SES method (SSE/n)
+maxtemp1990.holt.ASE <- maxtemp1990.holt.SSE / maxtemp1990.holt.n
 maxtemp1990.holt.ASE
 ```
 
