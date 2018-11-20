@@ -1,6 +1,6 @@
 ---
 title: "Case Study 2"
-author: " & Chad Madding"
+author: "Jackson Au & Chad Madding"
 date: "November 26, 2018"
 output:
  html_document:
