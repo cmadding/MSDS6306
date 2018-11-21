@@ -47,6 +47,7 @@ EuStock <- data.frame(EuStockMarkets)
 DAX <- EuStock$DAX
 #Look at stock data
 head(DAX)
+summary(DAX)
 ```
 
     b. These are annual European Stock Data from 1990 onward. Create a rudimentary
@@ -55,10 +56,12 @@ head(DAX)
     add a vertical red line to your plot which divides pre-1997 and post-1997 information.
 
 ```{r The German DAX, echo=TRUE}
-#232 is from 1860obs/8years=232
-DaxStocks<-ts(DAX, frequency=232, start=c(1991,1), end=c(1998,1))
+#Just wanted to break down frequency
+#so I would not forget: 68 is from 1860obs/27years=68
+frequency <- length(DAX)/(2018-1991)
+DaxStocks<-ts(DAX, frequency=68, start=c(1991,1), end=c(2018,1))
 #a rudimentary plot with a blue line, an informative title and axes labeled accurately
-plot(DaxStocks, col="blue", main = "The German DAX 1991-1998", ylab = "DAX")
+plot(DaxStocks, col="blue", main = "The German DAX 1991-2018", ylab = "DAX")
 #vertical red line which divides pre-1997 and post-1997
 abline(v=1997, col="red")
 ```
@@ -233,7 +236,7 @@ Gregorovitch.xts <- xts(Gregorovitch[,-1], order.by = Gregorovitch$Date)
 #bind the two xts objects together
 Olli_Greg <- merge(Ollivander.xts,Gregorovitch.xts,all=TRUE)
 #create a dygraph from it, title and lable x/y axes
-dygraph(Olli_Greg, main = "Wands Sales By Year", xlab = "Year", ylab = "Total Wands Sold") %>%
+dygraph(Olli_Greg, main = "Wand Sales By Year", xlab = "Year", ylab = "Total Wands Sold") %>%
   #Label each Series (via dySeries) to be the appropriate wand-maker
   dySeries("Ollivander.xts", label = "Ollivander") %>%
   dySeries("Gregorovitch.xts", label = "Gregorovitch") %>%
