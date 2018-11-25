@@ -31,11 +31,11 @@ Unless otherwise stated, please enable {r, echo=TRUE} so your code is visible.
 #### 1. Warm Up: Brief Financial Data (20%)
 
     a. Natively in R, you have access to sample data sets of prominent stocks over time.
-    We’ll be using EuStockMarkets for this question. Type help(EuStockMarkets) to learn more.
+    We'll be using EuStockMarkets for this question. Type help(EuStockMarkets) to learn more.
     From these data, pull specifically the DAX index. For all questions in this assignment,
-    you’re welcome to normalize (or don’t!) how you see fit, but, if you choose to,
-    please document what you’re doing and why for the grader.
-    It’s not necessary for the purpose of this assignment.
+    you're welcome to normalize (or don't!) how you see fit, but, if you choose to,
+    please document what you're doing and why for the grader.
+    It's not necessary for the purpose of this assignment.
 
 ```{r enter and look at EuStock data, echo=TRUE}
 #help(EuStockMarkets)

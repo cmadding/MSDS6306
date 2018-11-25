@@ -1,0 +1,26 @@
+---
+title: "CaseStudy2"
+author: "JAu_CMadding"
+date: "11/24/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+
+setwd("/Users/jackson/Desktop/CaseStudy2")
+training_attrition <- read.csv("CaseStudy2-data.csv", header=T,na.strings=c(""))
+
+#check for NAs
+sapply(training_attrition,function(x) sum(is.na(x)))
+
+#we can drop ID, EmployeeCount, EmployeeNumber, Over18, StandardHours
+
+training_attrition <- subset(training_attrition,select=c(2,3,4,5,6,7,8,9,12,13,14,15,16,17,18,19,20,21,22,24,25,26,27,29,30,31,32,33,34,35,36,37))
+
+model <- glm(Attrition ~.,family=binomial(link='logit'),data=training_attrition)
+
+summary(model)
+```

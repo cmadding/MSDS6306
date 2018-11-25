@@ -1,0 +1,81 @@
+---
+title: "Case Study 2 EDA only"
+author: "Jackson Au & Chad Madding"
+date: "November 25, 2018"
+output:
+ html_document:
+   keep_md: yes
+ pdf_document: default
+ word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Install if the package doesn't exist 
+#install.packages('DataExplorer') 
+library(DataExplorer)
+library(readr)
+```
+
+    MSDS 6306: Doing Data Science
+    Case Study 02
+    Due: Sunday, December 9th at 11:59pm. 
+
+#### Description:
+DDSAnalytics is an analytics company that specializes in talent management solutions for Fortune 1000 companies. Talent management is defined as the iterative process of developing and retaining employees. It may include workforce planning, employee training programs, identifying high-potential employees and reducing/preventing voluntary employee turnover (attrition). To gain a competitive edge over its competition, DDSAnalytics is planning to leverage data science for talent management. The executive leadership has identified predicting employee turnover as its first application of data science for talent management. Before the business green lights the project, they have tasked your data science team to conduct an analysis of existing employee data.
+
+```{r read in data, echo=TRUE}
+#read in data
+training_attrition <- read.csv("CaseStudy2-data.csv", header=T,na.strings=c(""))
+
+#data prep and cleaning
+#check for NAs
+sapply(training_attrition,function(x) sum(is.na(x)))
+
+#Graph of missing data
+plot_missing(training_attrition)
+
+#we can drop ID, EmployeeCount, EmployeeNumber, Over18, StandardHours
+training_attrition <- subset(training_attrition,select=c(2,3,4,5,6,7,8,9,12,13,14,15,16,17,18,19,20,21,22,24,25,26,27,29,30,31,32,33,34,35,36,37))
+
+```
+
+#### Goal:
+Conduct exploratory data analysis (EDA) to determine factors that lead to attrition.
+
+```{r exploratory data analysis, echo=TRUE}
+
+#Variables
+plot_str(training_attrition)
+
+#Continuous Variables
+plot_histogram(training_attrition)
+
+plot_density(training_attrition)
+
+#bivariate/multivariate analysis
+
+#Correlation analysis
+plot_correlation(training_attrition, type = 'continuous','Attrition')
+
+#Categorical Variables-Barplots
+plot_bar(training_attrition)
+
+```
+
+Looking at the first full model.
+```{r first full model, echo=TRUE}
+#checking out the first model
+model <- glm(Attrition ~.,family=binomial(link='logit'),data=training_attrition)
+#print out the model
+summary(model)
+```
+
+
+
+Create a full EDA report
+
+```{r full EDA report, echo=FALSE}
+#Create a full EDA report
+create_report(data=training_attrition, output_file = 'Case Study 2 EDA.html', y='Attrition')
+```
