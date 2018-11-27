@@ -25,7 +25,7 @@ training_attrition <- read.csv("CaseStudy2-data.csv", header=T,na.strings=c(""))
 validation_attrition <- read.csv("CaseStudy2Validation.csv", header=T,na.strings=c(""))
 
 #data prep and cleaning
-#check for training_attrition for NAs
+#check training_attrition for NAs
 sapply(training_attrition,function(x) sum(is.na(x)))
 ```
 
@@ -59,7 +59,7 @@ sapply(training_attrition,function(x) sum(is.na(x)))
 ```
 
 ```r
-#check for training_attrition for NAs
+#check validation_attrition for NAs
 sapply(validation_attrition,function(x) sum(is.na(x)))
 ```
 
@@ -95,7 +95,7 @@ sapply(validation_attrition,function(x) sum(is.na(x)))
 ```r
 #we can drop ID, EmployeeCount, EmployeeNumber, Over18, StandardHours
 training_attrition <- subset(training_attrition,select=c(2,3,4,5,6,7,8,9,12,13,14,15,16,17,18,19,20,21,22,24,25,26,27,29,30,31,32,33,34,35,36,37))
-#we can drop ID, EmployeeCount, EmployeeNumber, Over18, StandardHours for the test set
+#droping the same from the validation set as well
 validation_attrition <- subset(validation_attrition,select=c(2,3,4,5,6,7,8,9,12,13,14,15,16,17,18,19,20,21,22,24,25,26,27,29,30,31,32,33,34,35,36,37))
 ```
 
@@ -155,9 +155,36 @@ dim(training_attrition)
 ```
 
 ```r
+#looking at the distrubation of the data
+#Continuous Variables
+plot_histogram(training_attrition)
+```
+
+![](Madding_EDA_files/figure-html/exploratory data analysis-1.png)<!-- -->![](Madding_EDA_files/figure-html/exploratory data analysis-2.png)<!-- -->
+
+```r
+plot_density(training_attrition)
+```
+
+![](Madding_EDA_files/figure-html/exploratory data analysis-3.png)<!-- -->![](Madding_EDA_files/figure-html/exploratory data analysis-4.png)<!-- -->
+
+```r
+#Looking at the Categorical Variables
+#Categorical Variables-Barplots
+plot_bar(training_attrition)
+```
+
+![](Madding_EDA_files/figure-html/exploratory data analysis-5.png)<!-- -->
+
+####We will now start looking for the correlations in the data.
+
+```r
+#setting up the data for the correlations graph
 numeric_training_attrition <- training_attrition[,c(1,4,6,7,9,11,13,15,17,19,21:32)]
 numeric_Attrition = as.numeric(training_attrition$Attrition)- 1
 numeric_training_attrition = cbind(numeric_Attrition, numeric_training_attrition)
+
+#looking at the structure of the data
 str(numeric_training_attrition)
 ```
 
@@ -189,6 +216,7 @@ str(numeric_training_attrition)
 ```
 
 ```r
+#looking at the correlations in the data
 library(corrplot)
 ```
 
@@ -201,7 +229,9 @@ M <- cor(numeric_training_attrition)
 corrplot(M, method="circle")
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-1.png)<!-- -->
+![](Madding_EDA_files/figure-html/looking for the correlations in the data-1.png)<!-- -->
+####Next we will find out how many correlations are bigger than 0.70.
+
 
 ```r
 #Finding how many correlations are bigger than 0.70
@@ -219,8 +249,12 @@ print(k/2)
 ## [1] 7
 ```
 
+#####Lets break down those top 7.
+
 ```r
-### Overtime vs Attiriton
+#looking at the top 7 over 0.70
+
+# Overtime vs Attiriton
 l <- ggplot(training_attrition, aes(OverTime,fill = Attrition))
 l <- l + geom_histogram(stat="count")
 ```
@@ -233,7 +267,7 @@ l <- l + geom_histogram(stat="count")
 print(l)
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-2.png)<!-- -->
+![](Madding_EDA_files/figure-html/break down those top 7-1.png)<!-- -->
 
 ```r
 tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$OverTime,mean)
@@ -243,10 +277,10 @@ tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$OverTime
 ##        No       Yes 
 ## 0.1053892 0.2985075
 ```
+This chart shows that people who work over time have more Attrition.
+
 
 ```r
-## As seen in the plot, personnels who work over time have more Attrition
-
 ### MaritalStatus vs Attiriton
 l <- ggplot(training_attrition, aes(MaritalStatus,fill = Attrition))
 l <- l + geom_histogram(stat="count")
@@ -260,7 +294,7 @@ l <- l + geom_histogram(stat="count")
 print(l)
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-3.png)<!-- -->
+![](Madding_EDA_files/figure-html/MaritalStatus-1.png)<!-- -->
 
 ```r
 tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$MaritalStatus,mean)
@@ -270,10 +304,10 @@ tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$MaritalS
 ##   Divorced    Married     Single 
 ## 0.07954545 0.13370998 0.25600000
 ```
+Single people have more tendency to be subject to attrition.
+
 
 ```r
-## single personnels have more tendency to be subject to attrition
-
 ###JobRole vs Attrition
 l <- ggplot(training_attrition, aes(JobRole,fill = Attrition))
 l <- l + geom_histogram(stat="count") +
@@ -288,7 +322,7 @@ l <- l + geom_histogram(stat="count") +
 print(l)
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-4.png)<!-- -->
+![](Madding_EDA_files/figure-html/JobRole-1.png)<!-- -->
 
 ```r
 tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$JobRole,mean)
@@ -314,10 +348,10 @@ mean(as.numeric(training_attrition$Attrition) - 1)
 ```
 ## [1] 0.1606838
 ```
+Here we can see that laboratory technician, human resource workers and sales representative roles have more attrition.
+
 
 ```r
-## we see that labaratory technican, human resources and sales representative roles have more attrition.
-
 ###Gender vs Attrition
 l <- ggplot(training_attrition, aes(Gender,fill = Attrition))
 l <- l + geom_histogram(stat="count")
@@ -331,7 +365,7 @@ l <- l + geom_histogram(stat="count")
 print(l)
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-5.png)<!-- -->
+![](Madding_EDA_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
 
 ```r
 tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$Gender,mean)
@@ -341,10 +375,10 @@ tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$Gender,m
 ##    Female      Male 
 ## 0.1360691 0.1768034
 ```
+Gender doesn't seem to play much of a role in attrition.
+
 
 ```r
-## gender characteristic doesn't have so much significance
-
 ###EducationField vs Attrition
 l <- ggplot(training_attrition, aes(EducationField,fill = Attrition))
 l <- l + geom_histogram(stat="count") +
@@ -359,7 +393,7 @@ l <- l + geom_histogram(stat="count") +
 print(l)
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-6.png)<!-- -->
+![](Madding_EDA_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
 ```r
 tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$EducationField,mean)
@@ -371,10 +405,10 @@ tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$Educatio
 ##            Other Technical Degree 
 ##        0.1111111        0.2476190
 ```
+Workers holding degrees in Technological and Human Resources are outstanding with a high attrition ratio.
+
 
 ```r
-## Technical Degree and Human Resources are outstanding with high attrition ratio.
-
 ###Department vs Attrition
 l <- ggplot(training_attrition, aes(Department,fill = Attrition))
 l <- l + geom_histogram(stat="count")
@@ -388,7 +422,7 @@ l <- l + geom_histogram(stat="count")
 print(l)
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-7.png)<!-- -->
+![](Madding_EDA_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
 ```r
 tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$Department,mean)
@@ -398,10 +432,10 @@ tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$Departme
 ##        Human Resources Research & Development                  Sales 
 ##              0.1304348              0.1397154              0.2108262
 ```
+Department results are showing that Research & Development have a slightley higher probability of attrition.
+
 
 ```r
-## department results aren't saying anything so important
-
 ###BusinessTravel vs Attrition
 l <- ggplot(training_attrition, aes(BusinessTravel,fill = Attrition))
 l <- l + geom_histogram(stat="count")
@@ -415,7 +449,7 @@ l <- l + geom_histogram(stat="count")
 print(l)
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-8.png)<!-- -->
+![](Madding_EDA_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 ```r
 tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$BusinessTravel,mean)
@@ -425,11 +459,10 @@ tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$Business
 ##        Non-Travel Travel_Frequently     Travel_Rarely 
 ##        0.09090909        0.24888889        0.14610778
 ```
+Looking at travel verses non travel we see that persons traveling more frequently have a higher probability of attrition.
+
 
 ```r
-## if businesstravel = non-travel, so little probability to have attrition
-## if businesstravel = travel_frequently , more probability to have attrition.
-
 ### x=Overtime, y= Age, z = MaritalStatus , t = Attrition
 ggplot(training_attrition, aes(OverTime, Age)) +  
   facet_grid(.~MaritalStatus) +
@@ -438,11 +471,11 @@ ggplot(training_attrition, aes(OverTime, Age)) +
   theme_light()
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-9.png)<!-- -->
+![](Madding_EDA_files/figure-html/Overtime-1.png)<!-- -->
+This graph shows that single people under 35, working overtime are subject to attrition.
+
 
 ```r
-## we can say that attrition is cumulating in which OverTime =Yes & Marial_Status=Single & Age< 35
-
 ### MonthlyIncome vs. Age, by  color = Attrition
 ggplot(training_attrition, aes(MonthlyIncome, Age, color = Attrition)) + 
   geom_jitter() +
@@ -450,13 +483,22 @@ ggplot(training_attrition, aes(MonthlyIncome, Age, color = Attrition)) +
   theme_light()
 ```
 
-![](Madding_EDA_files/figure-html/exploratory data analysis-10.png)<!-- -->
+![](Madding_EDA_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+This last graph shows a bit of logical information. As Age increases, Monthly Income tends to increase as well.
+
+####There are a few other things in the data:
+1. The most outstanding result is between Job Level and Monthly income, whose correlation is 0.95.
+2. A higher performance rating shows a more Percent salary hike, whose correlation is 0.772.
+3. The more years wotking for the company, the higher Job Levels, whose correlation is 0.77.
+4. The more total years working for the company, the higher their monthly income, whose correlation is 0.77.
+5. The more years with their current manager, the more years they were at the company, whose correlation is 0.763.
+6. The last two show more logical triends. The more years at company, the more years they are in their current role, whose correlation is 0.753.
+7. Last, the more years with current manager, the more years in their current role, whose correlation is 0.71.
+
+###Predictions with logistic regression
 
 ```r
-#As Age increases, MonthlyIncome tends to increase
-
-#Prediction with logistic regression :
-
+#loading the needed liraries
 library(caTools)
 library(e1071)
 library(glmnet)
@@ -475,9 +517,11 @@ library(glmnet)
 ```
 
 ```r
+#setting up both the training and validation data
 training_attrition_mydatanew = training_attrition[,-c(6,9,22)]
 validation_attrition_mydatanew = validation_attrition[,-c(6,9,22)]
 
+#looking at the structure of both data sets
 str(training_attrition_mydatanew)
 ```
 
@@ -552,33 +596,246 @@ str(validation_attrition_mydatanew)
 ```
 
 ```r
+#simplifining the names
 train <- training_attrition_mydatanew
 test <- validation_attrition_mydatanew
 
+#using glm to train the full model with a binomial setting
 model_glm_binomial <- glm(Attrition ~ ., data = train, family='binomial')
+#running the test data through the model
 predicted_glm_binomial <- predict(model_glm_binomial, test, type='response')
 predicted_glm_binomial <- ifelse(predicted_glm_binomial > 0.5,1,0)
-
-#checking out the first model
-model_glm_logit <- glm(Attrition ~.,family=binomial(link='logit'),data=train)
-predicted_glm_logit <- predict(model_glm_logit, test, type='response')
-predicted_glm_logit <- ifelse(predicted_glm_logit > 0.5,1,0)
-#print out the model
-summary(predicted_glm_binomial)
+summary(model_glm_binomial)
 ```
 
 ```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-## 0.00000 0.00000 0.00000 0.07333 0.00000 1.00000
+## 
+## Call:
+## glm(formula = Attrition ~ ., family = "binomial", data = train)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.7247  -0.5070  -0.2672  -0.1027   3.4055  
+## 
+## Coefficients:
+##                                    Estimate Std. Error z value Pr(>|z|)
+## (Intercept)                      -1.231e+01  4.380e+02  -0.028 0.977577
+## Age                              -2.365e-02  1.477e-02  -1.601 0.109333
+## BusinessTravelTravel_Frequently   1.486e+00  4.325e-01   3.436 0.000591
+## BusinessTravelTravel_Rarely       6.482e-01  3.991e-01   1.624 0.104386
+## DailyRate                        -3.726e-04  2.431e-04  -1.533 0.125371
+## DepartmentResearch & Development  1.302e+01  4.380e+02   0.030 0.976289
+## DepartmentSales                   1.139e+01  4.380e+02   0.026 0.979253
+## Education                         7.492e-02  9.771e-02   0.767 0.443255
+## EducationFieldLife Sciences       1.150e-01  1.048e+00   0.110 0.912664
+## EducationFieldMarketing           3.539e-01  1.099e+00   0.322 0.747424
+## EducationFieldMedical             7.241e-03  1.052e+00   0.007 0.994510
+## EducationFieldOther              -6.620e-01  1.116e+00  -0.593 0.553189
+## EducationFieldTechnical Degree    8.086e-01  1.063e+00   0.761 0.446753
+## GenderMale                        3.997e-01  2.033e-01   1.966 0.049249
+## HourlyRate                        6.843e-03  4.911e-03   1.393 0.163540
+## JobInvolvement                   -6.350e-01  1.343e-01  -4.729 2.26e-06
+## JobLevel                         -2.140e-01  3.354e-01  -0.638 0.523493
+## JobRoleHuman Resources            1.405e+01  4.380e+02   0.032 0.974412
+## JobRoleLaboratory Technician      1.215e+00  5.016e-01   2.422 0.015421
+## JobRoleManager                    3.125e-01  8.908e-01   0.351 0.725727
+## JobRoleManufacturing Director    -1.583e-01  5.618e-01  -0.282 0.778054
+## JobRoleResearch Director         -2.298e+00  1.296e+00  -1.773 0.076265
+## JobRoleResearch Scientist         1.290e-01  5.187e-01   0.249 0.803553
+## JobRoleSales Executive            2.401e+00  1.354e+00   1.774 0.076120
+## JobRoleSales Representative       3.265e+00  1.398e+00   2.335 0.019531
+## JobSatisfaction                  -3.710e-01  8.894e-02  -4.171 3.03e-05
+## MaritalStatusMarried              6.447e-01  3.060e-01   2.107 0.035149
+## MaritalStatusSingle               1.262e+00  3.867e-01   3.263 0.001103
+## MonthlyIncome                     7.297e-05  8.674e-05   0.841 0.400167
+## MonthlyRate                      -1.104e-05  1.379e-05  -0.801 0.423165
+## NumCompaniesWorked                1.813e-01  4.183e-02   4.334 1.47e-05
+## OverTimeYes                       1.845e+00  2.119e-01   8.707  < 2e-16
+## PercentSalaryHike                -2.207e-03  2.684e-02  -0.082 0.934469
+## RelationshipSatisfaction         -1.972e-01  9.041e-02  -2.182 0.029131
+## StockOptionLevel                 -2.093e-01  1.709e-01  -1.225 0.220652
+## TotalWorkingYears                -5.905e-02  3.173e-02  -1.861 0.062711
+## TrainingTimesLastYear            -1.645e-01  8.101e-02  -2.030 0.042317
+## WorkLifeBalance                  -4.250e-01  1.351e-01  -3.147 0.001651
+## YearsAtCompany                    8.481e-02  4.111e-02   2.063 0.039086
+## YearsInCurrentRole               -1.372e-01  4.909e-02  -2.796 0.005178
+## YearsSinceLastPromotion           1.680e-01  4.528e-02   3.710 0.000207
+## YearsWithCurrManager             -1.047e-01  4.865e-02  -2.153 0.031314
+## Rand                              6.342e-02  9.912e-02   0.640 0.522263
+##                                     
+## (Intercept)                         
+## Age                                 
+## BusinessTravelTravel_Frequently  ***
+## BusinessTravelTravel_Rarely         
+## DailyRate                           
+## DepartmentResearch & Development    
+## DepartmentSales                     
+## Education                           
+## EducationFieldLife Sciences         
+## EducationFieldMarketing             
+## EducationFieldMedical               
+## EducationFieldOther                 
+## EducationFieldTechnical Degree      
+## GenderMale                       *  
+## HourlyRate                          
+## JobInvolvement                   ***
+## JobLevel                            
+## JobRoleHuman Resources              
+## JobRoleLaboratory Technician     *  
+## JobRoleManager                      
+## JobRoleManufacturing Director       
+## JobRoleResearch Director         .  
+## JobRoleResearch Scientist           
+## JobRoleSales Executive           .  
+## JobRoleSales Representative      *  
+## JobSatisfaction                  ***
+## MaritalStatusMarried             *  
+## MaritalStatusSingle              ** 
+## MonthlyIncome                       
+## MonthlyRate                         
+## NumCompaniesWorked               ***
+## OverTimeYes                      ***
+## PercentSalaryHike                   
+## RelationshipSatisfaction         *  
+## StockOptionLevel                    
+## TotalWorkingYears                .  
+## TrainingTimesLastYear            *  
+## WorkLifeBalance                  ** 
+## YearsAtCompany                   *  
+## YearsInCurrentRole               ** 
+## YearsSinceLastPromotion          ***
+## YearsWithCurrManager             *  
+## Rand                                
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1031.48  on 1169  degrees of freedom
+## Residual deviance:  712.78  on 1127  degrees of freedom
+## AIC: 798.78
+## 
+## Number of Fisher Scoring iterations: 14
 ```
 
 ```r
-summary(predicted_glm_logit)
+#using glm to train the full model with a logit setting
+model_glm_logit <- glm(Attrition ~.,family=binomial(link='logit'),data=train)
+#running the test data through the model
+predicted_glm_logit <- predict(model_glm_logit, test, type='response')
+predicted_glm_logit <- ifelse(predicted_glm_logit > 0.5,1,0)
+summary(model_glm_logit)
 ```
 
 ```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-## 0.00000 0.00000 0.00000 0.07333 0.00000 1.00000
+## 
+## Call:
+## glm(formula = Attrition ~ ., family = binomial(link = "logit"), 
+##     data = train)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.7247  -0.5070  -0.2672  -0.1027   3.4055  
+## 
+## Coefficients:
+##                                    Estimate Std. Error z value Pr(>|z|)
+## (Intercept)                      -1.231e+01  4.380e+02  -0.028 0.977577
+## Age                              -2.365e-02  1.477e-02  -1.601 0.109333
+## BusinessTravelTravel_Frequently   1.486e+00  4.325e-01   3.436 0.000591
+## BusinessTravelTravel_Rarely       6.482e-01  3.991e-01   1.624 0.104386
+## DailyRate                        -3.726e-04  2.431e-04  -1.533 0.125371
+## DepartmentResearch & Development  1.302e+01  4.380e+02   0.030 0.976289
+## DepartmentSales                   1.139e+01  4.380e+02   0.026 0.979253
+## Education                         7.492e-02  9.771e-02   0.767 0.443255
+## EducationFieldLife Sciences       1.150e-01  1.048e+00   0.110 0.912664
+## EducationFieldMarketing           3.539e-01  1.099e+00   0.322 0.747424
+## EducationFieldMedical             7.241e-03  1.052e+00   0.007 0.994510
+## EducationFieldOther              -6.620e-01  1.116e+00  -0.593 0.553189
+## EducationFieldTechnical Degree    8.086e-01  1.063e+00   0.761 0.446753
+## GenderMale                        3.997e-01  2.033e-01   1.966 0.049249
+## HourlyRate                        6.843e-03  4.911e-03   1.393 0.163540
+## JobInvolvement                   -6.350e-01  1.343e-01  -4.729 2.26e-06
+## JobLevel                         -2.140e-01  3.354e-01  -0.638 0.523493
+## JobRoleHuman Resources            1.405e+01  4.380e+02   0.032 0.974412
+## JobRoleLaboratory Technician      1.215e+00  5.016e-01   2.422 0.015421
+## JobRoleManager                    3.125e-01  8.908e-01   0.351 0.725727
+## JobRoleManufacturing Director    -1.583e-01  5.618e-01  -0.282 0.778054
+## JobRoleResearch Director         -2.298e+00  1.296e+00  -1.773 0.076265
+## JobRoleResearch Scientist         1.290e-01  5.187e-01   0.249 0.803553
+## JobRoleSales Executive            2.401e+00  1.354e+00   1.774 0.076120
+## JobRoleSales Representative       3.265e+00  1.398e+00   2.335 0.019531
+## JobSatisfaction                  -3.710e-01  8.894e-02  -4.171 3.03e-05
+## MaritalStatusMarried              6.447e-01  3.060e-01   2.107 0.035149
+## MaritalStatusSingle               1.262e+00  3.867e-01   3.263 0.001103
+## MonthlyIncome                     7.297e-05  8.674e-05   0.841 0.400167
+## MonthlyRate                      -1.104e-05  1.379e-05  -0.801 0.423165
+## NumCompaniesWorked                1.813e-01  4.183e-02   4.334 1.47e-05
+## OverTimeYes                       1.845e+00  2.119e-01   8.707  < 2e-16
+## PercentSalaryHike                -2.207e-03  2.684e-02  -0.082 0.934469
+## RelationshipSatisfaction         -1.972e-01  9.041e-02  -2.182 0.029131
+## StockOptionLevel                 -2.093e-01  1.709e-01  -1.225 0.220652
+## TotalWorkingYears                -5.905e-02  3.173e-02  -1.861 0.062711
+## TrainingTimesLastYear            -1.645e-01  8.101e-02  -2.030 0.042317
+## WorkLifeBalance                  -4.250e-01  1.351e-01  -3.147 0.001651
+## YearsAtCompany                    8.481e-02  4.111e-02   2.063 0.039086
+## YearsInCurrentRole               -1.372e-01  4.909e-02  -2.796 0.005178
+## YearsSinceLastPromotion           1.680e-01  4.528e-02   3.710 0.000207
+## YearsWithCurrManager             -1.047e-01  4.865e-02  -2.153 0.031314
+## Rand                              6.342e-02  9.912e-02   0.640 0.522263
+##                                     
+## (Intercept)                         
+## Age                                 
+## BusinessTravelTravel_Frequently  ***
+## BusinessTravelTravel_Rarely         
+## DailyRate                           
+## DepartmentResearch & Development    
+## DepartmentSales                     
+## Education                           
+## EducationFieldLife Sciences         
+## EducationFieldMarketing             
+## EducationFieldMedical               
+## EducationFieldOther                 
+## EducationFieldTechnical Degree      
+## GenderMale                       *  
+## HourlyRate                          
+## JobInvolvement                   ***
+## JobLevel                            
+## JobRoleHuman Resources              
+## JobRoleLaboratory Technician     *  
+## JobRoleManager                      
+## JobRoleManufacturing Director       
+## JobRoleResearch Director         .  
+## JobRoleResearch Scientist           
+## JobRoleSales Executive           .  
+## JobRoleSales Representative      *  
+## JobSatisfaction                  ***
+## MaritalStatusMarried             *  
+## MaritalStatusSingle              ** 
+## MonthlyIncome                       
+## MonthlyRate                         
+## NumCompaniesWorked               ***
+## OverTimeYes                      ***
+## PercentSalaryHike                   
+## RelationshipSatisfaction         *  
+## StockOptionLevel                    
+## TotalWorkingYears                .  
+## TrainingTimesLastYear            *  
+## WorkLifeBalance                  ** 
+## YearsAtCompany                   *  
+## YearsInCurrentRole               ** 
+## YearsSinceLastPromotion          ***
+## YearsWithCurrManager             *  
+## Rand                                
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1031.48  on 1169  degrees of freedom
+## Residual deviance:  712.78  on 1127  degrees of freedom
+## AIC: 798.78
+## 
+## Number of Fisher Scoring iterations: 14
 ```
 
 ```r
@@ -622,54 +879,12 @@ print((240+13)/300)
 ```
 
 ```r
-# The prediction accuracy of logistic regression is about 0.84
-
+#adding the predictions back into the data
 validation_attrition$PredictedAttrition_binomial <- predicted_glm_binomial
 validation_attrition$PredictedAttrition_logit <- predicted_glm_logit
 
 #check out the predicted data
 validation_attrition_compair <- validation_attrition[,c(2,33:34)]
-
-
-# The prediction accuracy of logistic regression is about 0.84
-
-#Continuous Variables
-plot_histogram(training_attrition)
 ```
-
-![](Madding_EDA_files/figure-html/exploratory data analysis-11.png)<!-- -->![](Madding_EDA_files/figure-html/exploratory data analysis-12.png)<!-- -->
-
-```r
-plot_density(training_attrition)
-```
-
-![](Madding_EDA_files/figure-html/exploratory data analysis-13.png)<!-- -->![](Madding_EDA_files/figure-html/exploratory data analysis-14.png)<!-- -->
-
-```r
-#bivariate/multivariate analysis
-
-#Correlation analysis
-plot_correlation(training_attrition, type = 'continuous','Attrition')
-```
-
-![](Madding_EDA_files/figure-html/exploratory data analysis-15.png)<!-- -->
-
-```r
-#Categorical Variables-Barplots
-plot_bar(training_attrition)
-```
-
-![](Madding_EDA_files/figure-html/exploratory data analysis-16.png)<!-- -->
-
-Looking at the data we can see:
-the most outstanding result is between JobLevel and Monthly income, whose correlation is 0.95.
-the more performance rating, the more Percent salary hike, whose correlation is 0.772
-the more total working Years, the more Job Level, whose correlation is 0.77
-the more total working Years, the more monthlyIncome, whose correlation is 0.77
-the more yearswithcurrmanager, the more yearsatcompany , whose correlation is 0.763
-the more yearsatcompany, the more yearsInCurrentRole , whose correlation is 0.753.
-the more yearswithcurrmanager, the more yearsincurrentrole, whose correlation is 0.71
-
-The prediction accuracy of logistic regression is about 'print((240+13)/300)'.
-
-Looking at the first full model.
+The prediction accuracy of logistic regression using binomial is about 0.84.
+The prediction accuracy of logistic regression using logit is about 0.84.
