@@ -60,7 +60,6 @@ plot_correlation(training_attrition, type = 'continuous','Attrition')
 
 #Categorical Variables-Barplots
 plot_bar(training_attrition)
-
 ```
 
 Looking at the first full model.
