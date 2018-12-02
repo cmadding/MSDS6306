@@ -28,7 +28,7 @@ DDSAnalytics is an analytics company that specializes in talent management solut
 #read in data
 
 #setwd("/Users/jackson/Desktop/CaseStudy2/")
-setwd("~/Data Sciance/GitHub/MSDS6306/MSDS6306/Case Study 2")
+#setwd("/Box Sync/Documents/Data Sciance/GitHub/MSDS6306/MSDS6306/Case Study 2")
 
 training_attrition <- read.csv("CaseStudy2-data.csv", header=T,na.strings=c(""))
 validation_attrition <- read.csv("CaseStudy2Validation.csv", header=T,na.strings=c(""))
@@ -119,7 +119,7 @@ print(jr)
 tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$JobRole,mean)
 mean(as.numeric(training_attrition$Attrition) - 1)
 ```
-Here we can see that Laboratory Technician, sales representative roles, human resources workers, laboratory technicians and sales executive have more attrition than other roles given in the data set.
+Here we can see that sales representative roles, human resources workers, laboratory technicians and sales executive have more attrition than other roles given in the data set.
 
 ```{r}
 ###Gender vs Attrition
@@ -147,7 +147,7 @@ dpt <- dpt + geom_histogram(stat="count")
 print(dpt)
 tapply(as.numeric(training_attrition$Attrition) - 1 ,training_attrition$Department,mean)
 ```
-Department results are showing that Sales and Human Resources are neck-and-neck when it comes to probability of attrition.
+Results in this area are showing that the Sales Department has the highest rate of attrition.
 
 ```{r}
 ###BusinessTravel vs Attrition
