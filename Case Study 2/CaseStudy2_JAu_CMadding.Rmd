@@ -79,7 +79,7 @@ corrplot(corr_matrix, method="circle")
 
 #### Next we will find out how many correlations are bigger than 0.7 as this typically signals high correlation.
 ```{r correlations bigger than 0.70, echo=TRUE}
-#this func will give me correlations bigger than 0.70
+#this func will give us correlations bigger than 0.70
 val = 0
 for(i in 1:23){
   for(r in 1:23){
@@ -90,9 +90,18 @@ for(i in 1:23){
   print(val/2)
 ```
 
-##### There are 7 explanatory variables that are over 0.7 in terms of Pearson's R coefficient!  We will make some observations about each explanatory variables and their subjectivity to attrition.
+##### There are 7 explanatory variables that are over 0.7 in terms of Pearson's R coefficient!
+##### To summarize, here were the correlations above 0.7:
+1. The most outstanding result is between Job Level and Monthly income, whose correlation is 0.95.
+2. A higher performance rating shows a more Percent salary hike, whose correlation is 0.772.
+3. The more years working for the company, the higher Job Levels, whose correlation is 0.77.
+4. The more total years working for the company, the higher their monthly income, whose correlation is 0.77.
+5. The more years with their current manager, the more years they were at the company, whose correlation is 0.763.
+6. The last two show more logical trends. The more years at the company, the more years they are in their current role, whose correlation is 0.753.
+7. Lastly, the more years with their current manager, the more years in their current role, whose correlation is 0.71.
+
+####We will make some observations about some variables and their subjectivity to attrition.
 ```{r break down those top 7, echo=TRUE}
-#looking at the top 7 over 0.70
 # Overtime vs Attiriton
 ot <- ggplot(training_attrition, aes(OverTime,fill = Attrition))
 ot <- ot + geom_histogram(stat="count")
@@ -169,14 +178,6 @@ ggplot(training_attrition, aes(OverTime, Age)) +
 
 This graph shows that single people around (~) the age of 35, working overtime are subject to attrition.
 
-#### To summarize, here were the correlations above 0.7:
-1. The most outstanding result is between Job Level and Monthly income, whose correlation is 0.95.
-2. A higher performance rating shows a more Percent salary hike, whose correlation is 0.772.
-3. The more years working for the company, the higher Job Levels, whose correlation is 0.77.
-4. The more total years working for the company, the higher their monthly income, whose correlation is 0.77.
-5. The more years with their current manager, the more years they were at the company, whose correlation is 0.763.
-6. The last two show more logical trends. The more years at the company, the more years they are in their current role, whose correlation is 0.753.
-7. Lastly, the more years with their current manager, the more years in their current role, whose correlation is 0.71.
 
 ### Predictions with logistic regression
 ```{r Predictions with logistic regression, echo=TRUE}
@@ -304,7 +305,6 @@ print((247+13)/300)
 table(test_m4$Attrition, predicted_glm_logit)
 #Checking the prediction accuracy for m4 (glm_logit)
 print((247+13)/300)
-
 
 
 
