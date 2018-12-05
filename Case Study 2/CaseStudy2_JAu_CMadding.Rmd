@@ -178,6 +178,12 @@ ggplot(dfTrain, aes(OverTime, Age)) +
 
 This graph shows that single people around (~) the age of 35, working overtime are more subject to attrition.
 
+### Graphing to see which Job Role had, on average, the highest job satisfaction
+dfTrain_JobSat <- dfTrain %>% group_by(JobRole) %>% summarise(JobSatisfaction_mean = mean(JobSatisfaction))
+
+jobsat <- ggplot(dfTrain_JobSat, aes(x = reorder(JobRole,-JobSatisfaction_mean),y=JobSatisfaction_mean)) + geom_bar(stat="identity", color = "sky blue", fill = "sky blue") + xlab("Job Role") + ylab("Job Satisfaction Score (avg)") + theme(axis.text.x=element_text(angle=90,hjust=1))
+                 
+print(jobsat)
 
 ### Predictions with logistic regression
 
