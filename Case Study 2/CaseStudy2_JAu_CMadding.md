@@ -486,6 +486,17 @@ ggplot(dfTrain, aes(OverTime, Age)) +
 
 This graph shows that single people around (~) the age of 35, working overtime are more subject to attrition.
 
+### Graphing to see which Job Role had, on average, the highest job satisfaction
+
+```r
+dfTrain_JobSat <- dfTrain %>% group_by(JobRole) %>% summarise(JobSatisfaction_mean = mean(JobSatisfaction))
+jobsat <- ggplot(dfTrain_JobSat, aes(x = reorder(JobRole,-JobSatisfaction_mean),y=JobSatisfaction_mean)) + geom_bar(stat="identity", color = "sky blue", fill = "sky blue") + xlab("Job Role") + ylab("Job Satisfaction Score (avg)") + theme(axis.text.x=element_text(angle=90,hjust=1))
+print(jobsat)
+```
+
+![](CaseStudy2_JAu_CMadding_files/figure-html/job satisfaction-1.png)<!-- -->
+
+On average, research scientists had the highest job satisfaction score, while HR had the lowest score.
 
 ### Predictions with logistic regression
 
@@ -1044,7 +1055,7 @@ print((247+13)/300)
 ## [1] 0.8666667
 ```
 
-Our best model showed to be 3 with a prediction accuracy of 87.7% and an AIC of 751.82. This is the lowest AIC if the 4 models.
+Our best model showed to be 3 with a prediction accuracy of 87.7% and an AIC of 751.82. This is the lowest AIC of the 4 models.
 
 
 ```r
