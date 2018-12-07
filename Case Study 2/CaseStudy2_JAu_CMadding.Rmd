@@ -108,7 +108,10 @@ for(i in 1:23){
 ot <- ggplot(dfTrain, aes(OverTime,fill = Attrition))
 ot <- ot + geom_histogram(stat="count")
 print(ot)
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$OverTime,mean)
+ot_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$OverTime,mean)
+
+# Attrition Rate based on Overtime worked (Yes|No)
+barplot(ot_rate, xlab = "Worked Overtime?", ylab = "Attrition Rate", col = "turquoise3", ylim = c(0, .3))
 ```
 This chart shows that people who work overtime have more attrition.
 
@@ -117,7 +120,10 @@ This chart shows that people who work overtime have more attrition.
 ms <- ggplot(dfTrain, aes(MaritalStatus,fill = Attrition))
 ms <- ms + geom_histogram(stat="count")
 print(ms)
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$MaritalStatus,mean)
+ms_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$MaritalStatus,mean)
+
+# Attrition Rate by Marital Status
+barplot(ms_rate, xlab = "Marital Status", ylab = "Attrition Rate", col = "turquoise3")
 ```
 Single people have more tendency to be subject to attrition.
 
@@ -127,8 +133,11 @@ jr <- ggplot(dfTrain, aes(JobRole,fill = Attrition))
 jr <- jr + geom_histogram(stat="count") +
   theme(axis.text.x=element_text(angle=90,hjust=1))
 print(jr)
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$JobRole,mean)
+jr_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$JobRole,mean)
 mean(as.numeric(dfTrain$Attrition) - 1)
+
+#Job Role Attrition Rate
+barplot(jr_rate, xlab = "", ylab = "Attrition Rate", col = "turquoise3", ylim = c(0,.5), cex.names=.4, las=2)
 ```
 Here we can see that sales representative roles, human resources workers, laboratory technicians and sales executive have more attrition than other roles given in the data set.
 
@@ -137,7 +146,10 @@ Here we can see that sales representative roles, human resources workers, labora
 g <- ggplot(dfTrain, aes(Gender,fill = Attrition))
 g <- g + geom_histogram(stat="count")
 print(g)
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$Gender,mean)
+g_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$Gender,mean)
+
+# Attrition Rate by Gender
+barplot(g_rate, xlab = "Gender", ylab = "Attrition Rate", col = "turquoise3", ylim = c(0,.2))
 ```
 Gender doesn't seem to play much of a role in attrition.
 
@@ -165,7 +177,10 @@ Results in this area are showing that the Sales Department has the highest rate 
 bt <- ggplot(dfTrain, aes(BusinessTravel,fill = Attrition))
 bt <- bt + geom_histogram(stat="count")
 print(bt)
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$BusinessTravel,mean)
+bt_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$BusinessTravel,mean)
+
+#Attrition Rate based on Business Travel frequency
+barplot(bt_rate, xlab = "Business Travel", ylab = "Attrition Rate", col = "turquoise3", ylim = c(0,.3)) 
 ```
 Looking at travel versus non travel, we see that those who travel more frequently have a higher probability of attrition.
 
