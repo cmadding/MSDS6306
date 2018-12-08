@@ -338,3 +338,7 @@ Model2: Using statistically significant variables (p-value < 0.001) yielded a pr
 Model3: Using statistically significant variable (p-value <0.05) yielded a prediction accuracy of 87.7% (AIC: 751.82).
 
 Model4: Using statistically significant variables (p-value <0.05) and also removing possibly redundant variables yielded a prediction accuracy of: 86.67% (AIC: 798.65).
+
+
+### YouTube Links:
+https://www.youtube.com/watch?v=smC2OgfEauA (Jackson's screen recording) 
