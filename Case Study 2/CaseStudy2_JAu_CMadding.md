@@ -1,7 +1,7 @@
 ---
 title: "Case Study 2"
 author: "Jackson Au & Chad Madding"
-date: "November 27, 2018"
+date: "December 9, 2018"
 output:
  html_document:
    keep_md: yes
@@ -281,13 +281,13 @@ print(ot)
 ![](CaseStudy2_JAu_CMadding_files/figure-html/break down those top 7-1.png)<!-- -->
 
 ```r
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$OverTime,mean)
+ot_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$OverTime,mean)
+
+# Attrition Rate based on Overtime worked (Yes|No)
+barplot(ot_rate, xlab = "Worked Overtime?", ylab = "Attrition Rate", col = "turquoise3", ylim = c(0, .3))
 ```
 
-```
-##        No       Yes 
-## 0.1053892 0.2985075
-```
+![](CaseStudy2_JAu_CMadding_files/figure-html/break down those top 7-2.png)<!-- -->
 This chart shows that people who work overtime have more attrition.
 
 
@@ -308,13 +308,13 @@ print(ms)
 ![](CaseStudy2_JAu_CMadding_files/figure-html/MaritalStatus-1.png)<!-- -->
 
 ```r
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$MaritalStatus,mean)
+ms_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$MaritalStatus,mean)
+
+# Attrition Rate by Marital Status
+barplot(ms_rate, xlab = "Marital Status", ylab = "Attrition Rate", col = "turquoise3")
 ```
 
-```
-##   Divorced    Married     Single 
-## 0.07954545 0.13370998 0.25600000
-```
+![](CaseStudy2_JAu_CMadding_files/figure-html/MaritalStatus-2.png)<!-- -->
 Single people have more tendency to be subject to attrition.
 
 
@@ -336,29 +336,20 @@ print(jr)
 ![](CaseStudy2_JAu_CMadding_files/figure-html/JobRole-1.png)<!-- -->
 
 ```r
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$JobRole,mean)
-```
-
-```
-## Healthcare Representative           Human Resources 
-##                0.08910891                0.16216216 
-##     Laboratory Technician                   Manager 
-##                0.24413146                0.05128205 
-##    Manufacturing Director         Research Director 
-##                0.06896552                0.01562500 
-##        Research Scientist           Sales Executive 
-##                0.14705882                0.18217054 
-##      Sales Representative 
-##                0.40000000
-```
-
-```r
+jr_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$JobRole,mean)
 mean(as.numeric(dfTrain$Attrition) - 1)
 ```
 
 ```
 ## [1] 0.1606838
 ```
+
+```r
+#Job Role Attrition Rate
+barplot(jr_rate, xlab = "", ylab = "Attrition Rate", col = "turquoise3", ylim = c(0,.5), cex.names=.4, las=2)
+```
+
+![](CaseStudy2_JAu_CMadding_files/figure-html/JobRole-2.png)<!-- -->
 Here we can see that sales representative roles, human resources workers, laboratory technicians and sales executive have more attrition than other roles given in the data set.
 
 
@@ -379,13 +370,13 @@ print(g)
 ![](CaseStudy2_JAu_CMadding_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
 
 ```r
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$Gender,mean)
+g_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$Gender,mean)
+
+# Attrition Rate by Gender
+barplot(g_rate, xlab = "Gender", ylab = "Attrition Rate", col = "turquoise3", ylim = c(0,.2))
 ```
 
-```
-##    Female      Male 
-## 0.1360691 0.1768034
-```
+![](CaseStudy2_JAu_CMadding_files/figure-html/unnamed-chunk-1-2.png)<!-- -->
 Gender doesn't seem to play much of a role in attrition.
 
 
@@ -463,13 +454,13 @@ print(bt)
 ![](CaseStudy2_JAu_CMadding_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 ```r
-tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$BusinessTravel,mean)
+bt_rate <- tapply(as.numeric(dfTrain$Attrition) - 1 ,dfTrain$BusinessTravel,mean)
+
+#Attrition Rate based on Business Travel frequency
+barplot(bt_rate, xlab = "Business Travel", ylab = "Attrition Rate", col = "turquoise3", ylim = c(0,.3)) 
 ```
 
-```
-##        Non-Travel Travel_Frequently     Travel_Rarely 
-##        0.09090909        0.24888889        0.14610778
-```
+![](CaseStudy2_JAu_CMadding_files/figure-html/unnamed-chunk-4-2.png)<!-- -->
 Looking at travel versus non travel, we see that those who travel more frequently have a higher probability of attrition.
 
 
@@ -1079,3 +1070,9 @@ Model2: Using statistically significant variables (p-value < 0.001) yielded a pr
 Model3: Using statistically significant variable (p-value <0.05) yielded a prediction accuracy of 87.7% (AIC: 751.82).
 
 Model4: Using statistically significant variables (p-value <0.05) and also removing possibly redundant variables yielded a prediction accuracy of: 86.67% (AIC: 798.65).
+
+
+### YouTube Links:
+https://www.youtube.com/watch?v=smC2OgfEauA (Jackson's screen recording)
+
+https://youtu.be/IUvaNUZv4mw (Chad's screen recording)

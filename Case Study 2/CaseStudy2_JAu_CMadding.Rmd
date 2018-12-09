@@ -1,7 +1,7 @@
 ---
 title: "Case Study 2"
 author: "Jackson Au & Chad Madding"
-date: "November 27, 2018"
+date: "December 9, 2018"
 output:
  html_document:
    keep_md: yes
@@ -341,4 +341,6 @@ Model4: Using statistically significant variables (p-value <0.05) and also remov
 
 
 ### YouTube Links:
-https://www.youtube.com/watch?v=smC2OgfEauA (Jackson's screen recording) 
+https://www.youtube.com/watch?v=smC2OgfEauA (Jackson's screen recording)
+
+https://youtu.be/IUvaNUZv4mw (Chad's screen recording)
