@@ -1,5 +1,5 @@
-faoexample
-==========
+FAO Example
+===========
 
 Data from the FAO for demonstrating reading and merging datasets, to give some more practice to things learned in week three of the Getting and Cleaning Data course on Coursera.
 
